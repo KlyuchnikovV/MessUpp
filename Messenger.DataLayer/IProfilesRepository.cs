@@ -13,5 +13,10 @@ namespace Messenger.DataLayer
         Profile GetProfile(Guid id);
         Profile ChangeProfileData(Profile newData);
         void DeleteProfile(Guid id);
+
+        // Additional methods.
+        IEnumerable<Chat> GetProfileChats(Guid id);
+        IEnumerable<Profile> GetProfiles(string name, string surname);
+        Profile GetProfile(string login);
     }
 }

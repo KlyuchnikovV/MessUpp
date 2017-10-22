@@ -13,5 +13,7 @@ namespace Messenger.DataLayer
         IEnumerable<Chat> GetProfileChats(Guid id);
         Chat GetChat(Guid chatId);
         void DeleteChat(Guid chatId);
+
+        IEnumerable<Profile> GetChatMembers(Guid chatId);
     }
 }

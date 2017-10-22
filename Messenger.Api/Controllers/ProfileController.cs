@@ -42,6 +42,32 @@ namespace Messenger.Api.Controllers
         {
             profilesRepository.DeleteProfile(id);
         }
-        // TODO: Add some methods
+
+
+        // Additional methods api.
+        [HttpGet]
+        [Route("api/profile/{id}/chats")]
+        public IEnumerable<Chat> GetChats(Guid id)
+        {
+            return profilesRepository.GetProfileChats(id);
+        }
+
+        [HttpGet]
+        [Route("api/profile/{name}:{surname}")]
+        public IEnumerable<Profile> GetChats(string name, string surname)
+        {
+            if (!name.Equals(null) || !surname.Equals(null))
+                return profilesRepository.GetProfiles(name, surname);
+            else
+                return null;
+        }
+
+        [HttpGet]
+        [Route("api/profile/{login}")]
+        public Profile GetProfile(string login)
+        {
+            return profilesRepository.GetProfile(login);
+        }
+
     }
 }

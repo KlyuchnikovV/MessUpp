@@ -185,7 +185,7 @@ namespace Messenger.DataLayer.SQL
         }
 
 
-        private IEnumerable<Profile> GetChatMembers(Guid chatId)
+        IEnumerable<Profile> GetChatMembers(Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
             {
