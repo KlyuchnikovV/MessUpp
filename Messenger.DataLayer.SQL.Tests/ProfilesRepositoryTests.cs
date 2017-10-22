@@ -97,7 +97,7 @@ namespace Messenger.DataLayer.SQL.Tests
             repository.CreateProfile(profile);
             tempUsers.Add(profile.Id);
 
-            var result = repository.GetProfileById(profile.Id);
+            var result = repository.GetProfile(profile.Id);
 
             Assert.AreEqual(profile.Login, result.Login);
             Assert.AreEqual(profile.Password, result.Password);
@@ -126,7 +126,7 @@ namespace Messenger.DataLayer.SQL.Tests
             repository.DeleteProfile(profile.Id);
             try
             {
-                result = repository.GetProfileById(profile.Id);
+                result = repository.GetProfile(profile.Id);
             }
             catch(System.ArgumentException)
             {

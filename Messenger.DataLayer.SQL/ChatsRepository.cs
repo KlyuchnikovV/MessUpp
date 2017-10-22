@@ -55,7 +55,7 @@ namespace Messenger.DataLayer.SQL
                     }
 
                     transaction.Commit();
-                    chat.ChatMembers = chatMembers.Select(x => profilesRepository.GetProfileById(x));
+                    chat.ChatMembers = chatMembers.Select(x => profilesRepository.GetProfile(x));
                     return chat;
                 }
             }
@@ -197,7 +197,7 @@ namespace Messenger.DataLayer.SQL
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
-                            yield return profilesRepository.GetProfileById(reader.GetGuid(reader.GetOrdinal("ProfileId")));
+                            yield return profilesRepository.GetProfile(reader.GetGuid(reader.GetOrdinal("ProfileId")));
                     }
                 }
             }

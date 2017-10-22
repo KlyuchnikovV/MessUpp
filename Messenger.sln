@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Model", "Messenger.Model\Messenger.Model.csproj", "{D379D61C-9005-4A6E-898A-9CF9E9BCB602}"
 EndProject
@@ -13,6 +13,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer.SQL", "Messenger.DataLayer.SQL\Messenger.DataLayer.SQL.csproj", "{D01F06B5-784B-4BBB-A86C-7691377F3368}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer.SQL.Tests", "Messenger.DataLayer.SQL.Tests\Messenger.DataLayer.SQL.Tests.csproj", "{772AC81A-0345-423E-950F-D013757794D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Api", "Messenger.Api\Messenger.Api.csproj", "{D5070085-9FE1-4A64-8F9B-09369055207F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +38,10 @@ Global
 		{772AC81A-0345-423E-950F-D013757794D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{772AC81A-0345-423E-950F-D013757794D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{772AC81A-0345-423E-950F-D013757794D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5070085-9FE1-4A64-8F9B-09369055207F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5070085-9FE1-4A64-8F9B-09369055207F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5070085-9FE1-4A64-8F9B-09369055207F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5070085-9FE1-4A64-8F9B-09369055207F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

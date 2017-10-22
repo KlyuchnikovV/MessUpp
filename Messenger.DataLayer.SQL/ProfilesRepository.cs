@@ -44,7 +44,7 @@ namespace Messenger.DataLayer.SQL
             return CreateProfile(newData); 
         }
 
-        public Profile GetProfileById(Guid id)
+        public Profile GetProfile(Guid id)
         {
             using (var connection = new SqlConnection(connectionString))
             {

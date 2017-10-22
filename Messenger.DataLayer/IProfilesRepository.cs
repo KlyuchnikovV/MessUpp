@@ -10,7 +10,7 @@ namespace Messenger.DataLayer
     public interface IProfilesRepository
     {
         Profile CreateProfile(Profile newProfile);
-        Profile GetProfileById(Guid id);
+        Profile GetProfile(Guid id);
         Profile ChangeProfileData(Profile newData);
         void DeleteProfile(Guid id);
     }
