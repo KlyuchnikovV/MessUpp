@@ -30,17 +30,11 @@ namespace Messenger.Api.Controllers
             return chatsRepository.GetChat(id);
         }
 
-        // TODO: repair
         [HttpPost]
         [Route("api/chat")]
         public Chat Create([FromBody] Chat chat)
         {
-            List<Guid> chatMembers = new List<Guid>();
-            foreach(Profile profile in chat.ChatMembers)
-            {
-                chatMembers.Add(profile.Id);
-            }
-            return chatsRepository.CreateChat(chatMembers, chat.ChatName);
+            return chatsRepository.CreateChat(chat);
         }
 
         [HttpDelete]
@@ -50,12 +44,13 @@ namespace Messenger.Api.Controllers
             chatsRepository.DeleteChat(id);
         }
 
-        // TODO: repair api/chat/{profileid}/chats - looks strange
+
+        // Additional methods.
         [HttpGet]
-        [Route("api/chat/{id}/chats")]
-        public IEnumerable<Chat> GetChats(Guid id)
+        [Route("api/chat/{name}")]
+        public IEnumerable<Chat> GetChat(string name)
         {
-            return chatsRepository.GetProfileChats(id);
+            return chatsRepository.GetChat(name);
         }
     }
 }

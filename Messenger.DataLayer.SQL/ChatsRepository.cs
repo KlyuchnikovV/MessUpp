@@ -19,19 +19,13 @@ namespace Messenger.DataLayer.SQL
             profilesRepository = _profilesRepository;
         }
 
-        public Chat CreateChat(IEnumerable<Guid> chatMembers, string name)
+        public Chat CreateChat(Chat chat)
         {
             using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
-                    var chat = new Chat
-                    {
-                        ChatId = Guid.NewGuid(),
-                        ChatName = name
-                    };
-
                     using (var command = connection.CreateCommand())
                     {
                         command.Transaction = transaction;
@@ -42,7 +36,7 @@ namespace Messenger.DataLayer.SQL
                         command.ExecuteNonQuery();
                     }
 
-                    foreach (var profileId in chatMembers)
+                    foreach (var profileId in chat.ChatMembers)
                     {
                         using (var command = connection.CreateCommand())
                         {
@@ -55,8 +49,81 @@ namespace Messenger.DataLayer.SQL
                     }
 
                     transaction.Commit();
-                    chat.ChatMembers = chatMembers.Select(x => profilesRepository.GetProfile(x));
+                    chat.ChatMembers = chat.ChatMembers.Select(x => profilesRepository.GetProfile(x.Id));
                     return chat;
+                }
+            }
+        }
+
+        public Chat GetChat(Guid chatId)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT ChatId, ChatName FROM Chats WHERE ChatId = @ChatId";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                            throw new ArgumentException($"Чат с chatId {chatId} не найден");
+                        return new Chat
+                        {
+                            ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
+                            ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
+                            ChatMembers = GetChatMembers(reader.GetGuid(reader.GetOrdinal("ChatId")))
+                        };
+                    }
+                }
+            }
+        }
+
+        public void DeleteChat(Guid chatId)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM ChatMembers WHERE ChatId = @ChatId";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    command.ExecuteNonQuery();
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM Chats WHERE ChatId = @ChatId";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+
+        // Additional methods.
+        public IEnumerable<Chat> GetChat(string chatName)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT ChatId, ChatName FROM Chats WHERE ChatName = @ChatName";
+                    command.Parameters.AddWithValue("@ChatName", chatName);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                            throw new ArgumentException($"Чат с chatName {chatName} не найден");
+                        while (reader.Read())
+                        {
+                            yield return new Chat
+                            {
+                                ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
+                                ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
+                                ChatMembers = GetChatMembers(reader.GetGuid(reader.GetOrdinal("ChatId")))
+                            };
+                        }
+                    }
                 }
             }
         }
@@ -91,101 +158,7 @@ namespace Messenger.DataLayer.SQL
             }
         }
 
-        public Chat GetChat(Guid chatId)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "SELECT ChatId, ChatName FROM Chats WHERE ChatId = @ChatId";
-                    command.Parameters.AddWithValue("@ChatId", chatId);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                            throw new ArgumentException($"Чат с chatId {chatId} не найден");
-                        return new Chat
-                        {
-                            ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
-                            ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
-                            ChatMembers = GetChatMembers(reader.GetGuid(reader.GetOrdinal("ChatId")))
-                        };
-                    }
-                }
-            }
-        }
-
-        /*public Chat GetChat(string chatName)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "SELECT ChatId, ChatName FROM Chats WHERE ChatName = @ChatName";
-                    command.Parameters.AddWithValue("@ChatName", chatName);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                            throw new ArgumentException($"Чат с chatName {chatName} не найден");
-                        return new Chat
-                        {
-                            ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
-                            ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
-                            ChatMembers = GetChatMembers(reader.GetGuid(reader.GetOrdinal("ChatId")))
-                        };
-                    }
-                }
-            }
-        }*/
-
-        public IEnumerable<Chat> GetProfileChats(Guid id)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "SELECT ChatMembers.ChatId, ChatName FROM ChatMembers INNER JOIN Chats ON ChatMembers.ChatId = Chats.ChatId WHERE ChatMembers.ProfileId = @Id";
-                    command.Parameters.AddWithValue("@Id", id);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            yield return new Chat
-                            {
-                                ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
-                                ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
-                                ChatMembers = GetChatMembers(reader.GetGuid(reader.GetOrdinal("ChatId")))
-                            };
-                        }
-                    }
-                }
-            }
-        }
-
-        public void DeleteChat(Guid chatId)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "DELETE FROM ChatMembers WHERE ChatId = @ChatId";
-                    command.Parameters.AddWithValue("@ChatId", chatId);
-                    command.ExecuteNonQuery();
-                }
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "DELETE FROM Chats WHERE ChatId = @ChatId";
-                    command.Parameters.AddWithValue("@ChatId", chatId);
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
-
-
-        IEnumerable<Profile> GetChatMembers(Guid chatId)
+        public IEnumerable<Profile> GetChatMembers(Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
             {

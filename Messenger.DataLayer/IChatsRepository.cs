@@ -9,11 +9,14 @@ namespace Messenger.DataLayer
 {
     public interface IChatsRepository
     {
-        Chat CreateChat(IEnumerable<Guid> members, string name);
-        IEnumerable<Chat> GetProfileChats(Guid id);
+        Chat CreateChat(Chat chat);
         Chat GetChat(Guid chatId);
         void DeleteChat(Guid chatId);
 
         IEnumerable<Profile> GetChatMembers(Guid chatId);
+        void AddChatMember(Guid userId, Guid chatId);
+        void DeleteChatMember(Guid userId, Guid chatId);
+        IEnumerable<Chat> GetChat(string chatName);
+
     }
 }
