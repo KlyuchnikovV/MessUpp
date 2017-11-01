@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using Messenger.DataLayer;
 using Messenger.Model;
 using System.Data.SqlClient;
+using NLog;
 
 namespace Messenger.DataLayer.SQL
 {
     public class MessagesRepository : IMessagesRepository
     {
         private readonly string connectionString;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public MessagesRepository(string _connectionString)
         {
@@ -22,12 +24,30 @@ namespace Messenger.DataLayer.SQL
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                logger.Debug("Удаление сообщения...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    return;
+                }
                 using (var command = connection.CreateCommand())
                 {
+                    logger.Info("Удаление сообщения {0}", id);
                     command.CommandText = "DELETE FROM Messages WHERE MessageId = @MessageId";
                     command.Parameters.AddWithValue("@MessageId", id);
-                    command.ExecuteNonQuery();
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exc)
+                    {
+                        logger.Error(exc.Message);
+                        return;
+                    }
                 }
             }
         }
@@ -36,9 +56,19 @@ namespace Messenger.DataLayer.SQL
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                logger.Debug("Получение сообщения...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    return null;
+                }
                 using (var command = connection.CreateCommand())
                 {
+                    logger.Info("Получение сообщения {0}", id);
                     command.CommandText = "SELECT TOP(1) * FROM Messages WHERE MessageId = @MessageId";
                     command.Parameters.AddWithValue("@MessageId", id);
 
@@ -66,9 +96,20 @@ namespace Messenger.DataLayer.SQL
         {
             using (var connection = new SqlConnection(connectionString))
             {
-                connection.Open();
+                logger.Debug("Создание сообщения...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    return null;
+                }
                 using (var command = connection.CreateCommand())
                 {
+                    logger.Info("Отправка сообщения с параметрами: ИД сообщения = {0}, ИД профиля = {1}, ИД чата = {2}, Текст = {3}, Дата отправки = {4}, Время жизни = {5}, ИД приложения = {6}",
+                        message.MessageId, message.ProfileId), message.ChatId, message.MessageText, message.Date, message.TimeToDestroy, message.Attachment);
                     command.CommandText = "INSERT INTO Messages (MessageId, ProfileId, ChatId, MessageText, SendDate, LifeTime, AttachId) VALUES (@MessageId, @ProfileId, @ChatId, @MessageText, @SendDate, @LifeTime, @AttachId)";
                     command.Parameters.AddWithValue("@MessageId", message.MessageId);
                     command.Parameters.AddWithValue("@ProfileId", message.ProfileId);
@@ -77,7 +118,15 @@ namespace Messenger.DataLayer.SQL
                     command.Parameters.AddWithValue("@SendDate", message.Date);
                     command.Parameters.AddWithValue("@LifeTime", message.TimeToDestroy);
                     command.Parameters.AddWithValue("@AttachId", message.Attachment);
-                    command.ExecuteNonQuery();
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exc)
+                    {
+                        logger.Error(exc.Message);
+                        return null;
+                    }
                     return message;
                 }
             }

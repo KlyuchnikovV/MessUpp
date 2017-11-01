@@ -7,7 +7,7 @@ using System.Web.Http;
 using Messenger.Model;
 using Messenger.DataLayer;
 using Messenger.DataLayer.SQL;
-
+using System.Web;
 
 namespace Messenger.Api.Controllers
 {
@@ -26,14 +26,24 @@ namespace Messenger.Api.Controllers
         [Route("api/profile/{id}")]
         public Profile Get(Guid id)
         {
-            return profilesRepository.GetProfile(id);
+            Profile profile =  profilesRepository.GetProfile(id);
+            if(profile == null)
+            {
+                throw new HttpException(404, "HTTP/1.1 404 Not Found");
+            }
+            return profile;
         }
 
         [HttpPost]
         [Route("api/profile")]
         public Profile Create([FromBody] Profile profile)
         {
-            return profilesRepository.CreateProfile(profile);
+            Profile profileAfter = profilesRepository.CreateProfile(profile);
+            if (profile == null)
+            {
+                throw new HttpException(409, "Этот логин занят.");
+            }
+            return profileAfter;
         }
 
         [HttpDelete]
@@ -49,11 +59,16 @@ namespace Messenger.Api.Controllers
         [Route("api/profile/{id}/chats")]
         public IEnumerable<Chat> GetChats(Guid id)
         {
-            return profilesRepository.GetProfileChats(id);
+            List<Chat> chats = profilesRepository.GetProfileChats(id).ToList();
+            if (chats == null)
+            {
+                throw new HttpException(404, "HTTP/1.1 404 Not Found");
+            }
+            return chats;
         }
-
+/*
         [HttpGet]
-        [Route("api/profile/{name}:{surname}")]
+        [Route("api/profile/#{name}#{surname}")]
         public IEnumerable<Profile> GetChats(string name, string surname)
         {
             if (!name.Equals(null) || !surname.Equals(null))
@@ -61,13 +76,13 @@ namespace Messenger.Api.Controllers
             else
                 return null;
         }
-
+        
         [HttpGet]
-        [Route("api/profile/{login}")]
+        [Route("api/profile/#login#{login}")]
         public Profile GetProfile(string login)
         {
             return profilesRepository.GetProfile(login);
         }
-
+        */
     }
 }

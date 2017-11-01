@@ -45,7 +45,5 @@ namespace Messenger.Api.Controllers
             messagesRepository.DeleteMessage(id);
         }
 
-        // TODO: add
-        
     }
 }

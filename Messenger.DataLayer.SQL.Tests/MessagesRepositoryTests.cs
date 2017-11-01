@@ -41,7 +41,14 @@ namespace Messenger.DataLayer.SQL.Tests
 
             var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
 
-            var chat = chatRepository.CreateChat(new[] { profile.Id }, chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
             chats.Add(chat.ChatId);
 
             var messageRepository = new MessagesRepository(ConnectionString);
@@ -92,7 +99,15 @@ namespace Messenger.DataLayer.SQL.Tests
 
             var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
 
-            var chat = chatRepository.CreateChat(new[] { profile.Id }, chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
+
             chats.Add(chat.ChatId);
 
             var messageRepository = new MessagesRepository(ConnectionString);
@@ -144,7 +159,15 @@ namespace Messenger.DataLayer.SQL.Tests
 
             var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
 
-            var chat = chatRepository.CreateChat(new[] { profile.Id }, chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
+
             chats.Add(chat.ChatId);
 
             var messageRepository = new MessagesRepository(ConnectionString);

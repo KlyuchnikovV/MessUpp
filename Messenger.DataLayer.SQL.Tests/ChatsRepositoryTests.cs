@@ -33,16 +33,25 @@ namespace Messenger.DataLayer.SQL.Tests
 
             const string chatName = "CreateChat";
 
-            var usersRepository = new ProfilesRepository(ConnectionString);
-            var result = usersRepository.CreateProfile(profile);
+            var profilesRepository = new ProfilesRepository(ConnectionString);
+            var result = profilesRepository.CreateProfile(profile);
 
             tempUsers.Add(result.Id);
 
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chatRepository = new ChatsRepository(ConnectionString, profilesRepository);
 
-            var chat = chatRepository.CreateChat(new[] { profile.Id }, chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
+
             chats.Add(chat.ChatId);
-            var userChats = chatRepository.GetProfileChats(profile.Id);
+
+            var userChats = profilesRepository.GetProfileChats(profile.Id);
 
             Assert.AreEqual(chatName, chat.ChatName);
             Assert.AreEqual(profile.Login, chat.ChatMembers.Single().Login);
@@ -72,7 +81,14 @@ namespace Messenger.DataLayer.SQL.Tests
 
             var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
 
-            var chat = chatRepository.CreateChat(new[] { profile.Id }, chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
             chats.Add(chat.ChatId);
             var resultChatById = chatRepository.GetChat(chat.ChatId);
 
@@ -101,7 +117,14 @@ namespace Messenger.DataLayer.SQL.Tests
 
             var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
 
-            var chat = chatRepository.CreateChat(new[] { profile.Id }, chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
             chats.Add(chat.ChatId);
             Chat result = null;
 
@@ -134,23 +157,51 @@ namespace Messenger.DataLayer.SQL.Tests
             const string chatName3 = "ProfileChat#3";
             const string chatName4 = "ProfileChat#4";
 
-            var usersRepository = new ProfilesRepository(ConnectionString);
-            var resProfile = usersRepository.CreateProfile(profile);
+            var profilesRepository = new ProfilesRepository(ConnectionString);
+            var resProfile = profilesRepository.CreateProfile(profile);
 
             tempUsers.Add(resProfile.Id);
 
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chatRepository = new ChatsRepository(ConnectionString, profilesRepository);
 
-            var chat1 = chatRepository.CreateChat(new[] { profile.Id }, chatName1);
-            var chat2 = chatRepository.CreateChat(new[] { profile.Id }, chatName2);
-            var chat3 = chatRepository.CreateChat(new[] { profile.Id }, chatName3);
-            var chat4 = chatRepository.CreateChat(new[] { profile.Id }, chatName4);
+            var chat1Before = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName1,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat2Before = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName2,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat3Before = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName3,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat4Before = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName4,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat1 = chatRepository.CreateChat(chat1Before);
+            var chat2 = chatRepository.CreateChat(chat2Before);
+            var chat3 = chatRepository.CreateChat(chat3Before);
+            var chat4 = chatRepository.CreateChat(chat4Before);
             chats.Add(chat1.ChatId);
             chats.Add(chat2.ChatId);
             chats.Add(chat3.ChatId);
             chats.Add(chat4.ChatId);
 
-            List<Chat> profileChats = chatRepository.GetProfileChats(profile.Id).ToList();
+            List<Chat> profileChats = profilesRepository.GetProfileChats(profile.Id).ToList();
 
             var ch = profileChats.Find(x => x.ChatId == chat1.ChatId);
             Assert.AreEqual(chat1.ChatId, ch.ChatId);
@@ -196,20 +247,28 @@ namespace Messenger.DataLayer.SQL.Tests
 
             const string chatName = "AddChat";
 
-            var usersRepository = new ProfilesRepository(ConnectionString);
-            var resAdminProfile = usersRepository.CreateProfile(adminProfile);
-            var resUserProfile = usersRepository.CreateProfile(userProfile);
+            var profilesRepository = new ProfilesRepository(ConnectionString);
+            var resAdminProfile = profilesRepository.CreateProfile(adminProfile);
+            var resUserProfile = profilesRepository.CreateProfile(userProfile);
 
             tempUsers.Add(resAdminProfile.Id);
             tempUsers.Add(resUserProfile.Id);
 
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chatRepository = new ChatsRepository(ConnectionString, profilesRepository);
 
-            var chat = chatRepository.CreateChat(new[] { resAdminProfile.Id },  chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { adminProfile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
+
             chats.Add(chat.ChatId);
             chatRepository.AddChatMember(resUserProfile.Id, chat.ChatId);
 
-            var userChats = chatRepository.GetProfileChats(resUserProfile.Id).ToList();
+            var userChats = profilesRepository.GetProfileChats(resUserProfile.Id).ToList();
 
             Assert.AreEqual(chat.ChatId, userChats[0].ChatId);
             Assert.AreEqual(chat.ChatName, userChats[0].ChatName);
@@ -217,7 +276,7 @@ namespace Messenger.DataLayer.SQL.Tests
 
             chatRepository.DeleteChatMember(resUserProfile.Id, chat.ChatId);
 
-            userChats = chatRepository.GetProfileChats(resUserProfile.Id).ToList();
+            userChats = profilesRepository.GetProfileChats(resUserProfile.Id).ToList();
             try
             {
                 Assert.AreEqual(chat.ChatId, userChats[0].ChatId);

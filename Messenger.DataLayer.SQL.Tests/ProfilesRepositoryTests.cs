@@ -63,16 +63,23 @@ namespace Messenger.DataLayer.SQL.Tests
             const string chatName = "UserChat";
 
             //act
-            var usersRepository = new ProfilesRepository(ConnectionString);
-            var result = usersRepository.CreateProfile(profile);
+            var profileRepository = new ProfilesRepository(ConnectionString);
+            var result = profileRepository.CreateProfile(profile);
 
             tempUsers.Add(result.Id);
 
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chatRepository = new ChatsRepository(ConnectionString, profileRepository);
 
-            var chat = chatRepository.CreateChat(new[] { profile.Id }, chatName);
+            var chatBefore = new Chat
+            {
+                ChatId = Guid.NewGuid(),
+                ChatName = chatName,
+                ChatMembers = new List<Profile>((new Profile[] { profile })),
+            };
+
+            var chat = chatRepository.CreateChat(chatBefore);
             chats.Add(chat.ChatId);
-            var userChats = chatRepository.GetProfileChats(profile.Id);
+            var userChats = profileRepository.GetProfileChats(profile.Id);
             //asserts
             Assert.AreEqual(chatName, chat.ChatName);
             Assert.AreEqual(profile.Login, chat.ChatMembers.Single().Login);

@@ -44,13 +44,13 @@ namespace Messenger.Api.Controllers
             chatsRepository.DeleteChat(id);
         }
 
-
+        /*
         // Additional methods.
         [HttpGet]
         [Route("api/chat/{name}")]
         public IEnumerable<Chat> GetChat(string name)
         {
             return chatsRepository.GetChat(name);
-        }
+        }*/
     }
 }
