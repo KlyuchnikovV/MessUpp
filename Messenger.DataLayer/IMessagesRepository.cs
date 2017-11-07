@@ -12,5 +12,6 @@ namespace Messenger.DataLayer
         Message SendMessage(Message message);
         Message GetMessage(Guid id);
         void DeleteMessage(Guid id);
+        IEnumerable<Message> GetMessages(Guid chatId);
     }
 }

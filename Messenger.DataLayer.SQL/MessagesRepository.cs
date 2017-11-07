@@ -108,8 +108,10 @@ namespace Messenger.DataLayer.SQL
                 }
                 using (var command = connection.CreateCommand())
                 {
+                    message.MessageId = Guid.NewGuid();
+                    message.Date = System.DateTime.Now;
                     logger.Info("Отправка сообщения с параметрами: ИД сообщения = {0}, ИД профиля = {1}, ИД чата = {2}, Текст = {3}, Дата отправки = {4}, Время жизни = {5}, ИД приложения = {6}",
-                        message.MessageId, message.ProfileId), message.ChatId, message.MessageText, message.Date, message.TimeToDestroy, message.Attachment);
+                        message.MessageId, message.ProfileId, message.ChatId, message.MessageText, message.Date, message.TimeToDestroy, message.Attachment);
                     command.CommandText = "INSERT INTO Messages (MessageId, ProfileId, ChatId, MessageText, SendDate, LifeTime, AttachId) VALUES (@MessageId, @ProfileId, @ChatId, @MessageText, @SendDate, @LifeTime, @AttachId)";
                     command.Parameters.AddWithValue("@MessageId", message.MessageId);
                     command.Parameters.AddWithValue("@ProfileId", message.ProfileId);
@@ -128,6 +130,43 @@ namespace Messenger.DataLayer.SQL
                         return null;
                     }
                     return message;
+                }
+            }
+        }
+
+        public IEnumerable<Message> GetMessages(Guid chatId)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Получение сообщений чата...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    yield break;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info("Получение сообщений чата {0}", chatId);
+                    command.CommandText = "SELECT * FROM Messages WHERE ChatId = @ChatId";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                            yield return new Message
+                            {
+                                MessageId = reader.GetGuid(reader.GetOrdinal("MessageId")),
+                                ProfileId = reader.GetGuid(reader.GetOrdinal("ProfileId")),
+                                ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
+                                MessageText = reader.GetString(reader.GetOrdinal("MessageText")),
+                                Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
+                                TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
+                                Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                            };
+                    }
                 }
             }
         }

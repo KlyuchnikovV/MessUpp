@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html>
+
+    <head>
+
+        <title>Messenger App. Version 0.1.0</title>
+		<script type="text/javascript" src="js/rest.js"></script>
+        <style>
+            .inputBox 
+            {
+                margin-left: 10px
+            }
+            .textbox 
+            {
+                border: 1px solid #434343;
+                -moz-border-radius: 10px;
+                -webkit-border-radius: 9px;
+                padding-left: 5px;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+
+    <body>
+        <form id="formCreate">
+            <div>
+                <label>Введите данные пользователя:<br/><br/></label>
+            </div>
+
+            <div style="padding-right: 10px; padding-top: 5px; float:left ">
+                <!-- Create default picture for user -->
+                <img id="avatar" style="width:150px; height:200px"/>
+            </div>
+
+            <div id="divName" class="inputBox">
+                <label>Имя:</label>
+                <div align="left">
+					<input id="txtName" class="textbox" type="textbox"/>
+                </div>
+                
+            </div>
+
+            <div id="divSurname" class="inputBox">
+                <label>Фамилия:</label>
+                <div>
+                    <input id="txtSurname" class="textbox"  type="textbox"/>
+                </div>
+            </div>
+
+            <div id="divLogin" class="inputBox">
+                <label>Логин:</label>
+                <div>
+                    <input id="txtLogin" class="textbox"  type="textbox"/>
+                </div>
+            </div>
+
+            <!-- Add regexp for checking password and style in separated file-->
+            <div id="divPassword" class="inputBox">
+                <label>Пароль:</label>
+                <div>
+                    <input id="txtPassword" class="textbox"  type="textbox"/>
+                </div>
+                <div style="padding-left: 150px">
+                    <label>Аватар:<br/></label>
+                    <input style="padding-top: 2px" id="avatarFile" type="file" accept=".jpg, .jpeg, .png" />
+                    
+                </div>
+            </div>
+
+            <div id="divButtons" style="padding-left: 160px">
+                <br/>
+                <input id="okButton" value="Создать" type="button" onclick="CreateUser(this)"/>
+                <input id="cancelButton" value="Отмена." type="button"  onclick="location.href = 'index.html';"/>
+            </div>
+        </form>
+
+        <script>
+			var textboxes = document.getElementsByTagName('input');
+
+            for(var i = 0; i < textboxes.length; i++)
+            {
+                var element = textboxes[i];
+                if(element.type != "text")
+                    continue;
+                if(element.addEventListener)
+                {
+                    element.addEventListener('textInput', TextBoxValidator, false);                      
+                }  
+			}
+
+            // Add checking instead of alerting. //
+            function TextBoxValidator(event) 
+            {
+                //alert("Gotcha!");    
+			}
+
+            document.getElementById('avatarFile').onchange = 
+            function (evt) 
+            {
+                var tgt = evt.target || window.event.srcElement,
+                    files = tgt.files;
+
+                if (FileReader && files && files.length) 
+                {
+                    var fr = new FileReader();
+                    fr.onload = function () {
+                        document.getElementById("avatar").src = fr.result;
+                    }
+                    fr.readAsDataURL(files[0]);
+                }
+                else
+                {
+                    alert("Не могу загрузить фотографию.");
+                }
+            }
+
+        </script>
+    </body>
+
+</html>

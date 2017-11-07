@@ -38,8 +38,9 @@ namespace Messenger.DataLayer.SQL
                 }
                 using (var command = connection.CreateCommand())
                 {
+                    var guid = Guid.NewGuid();
                     command.CommandText = "INSERT INTO Profiles (Id, Login, Password, Name, Surname, Avatar) values (@Id, @Login, @Password, @Name, @Surname, @Avatar)";
-                    command.Parameters.AddWithValue("@Id", newProfile.Id);
+                    command.Parameters.AddWithValue("@Id", guid);
                     command.Parameters.AddWithValue("@Login", newProfile.Login);
                     command.Parameters.AddWithValue("@Password", newProfile.Password);
                     command.Parameters.AddWithValue("@Name", newProfile.Name);
@@ -47,7 +48,9 @@ namespace Messenger.DataLayer.SQL
                     command.Parameters.AddWithValue("@Avatar", newProfile.Avatar);
 
                     logger.Info("Попытка создания нового профиля с параметрами: ИД = {0}, Логин = {1}, Пароль = {2}, Имя = {3}, Фамилия = {4}, Аватар = {5}.",
-                        newProfile.Id, newProfile.Login, newProfile.Password, newProfile.Name, newProfile.Surname, newProfile.Avatar);
+                        guid, newProfile.Login, newProfile.Password, newProfile.Name, newProfile.Surname, newProfile.Avatar);
+
+                    // Проверить наличие логина в базе. //
 
                     try
                     {
@@ -316,6 +319,53 @@ namespace Messenger.DataLayer.SQL
                         {
                             if (!reader.Read())
                                 throw new ArgumentException($"Пользователь с login {login} не найден");
+
+                            return new Profile
+                            {
+                                Id = reader.GetGuid(reader.GetOrdinal("Id")),
+                                Login = reader.GetString(reader.GetOrdinal("Login")),
+                                Password = reader.GetString(reader.GetOrdinal("Password")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Surname = reader.GetString(reader.GetOrdinal("Surname")),
+                                Avatar = reader.GetSqlBinary(reader.GetOrdinal("Avatar")).Value,
+                            };
+                        }
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        return null;
+                    }
+                }
+            }
+        }
+
+        public Profile GetProfile(string login, string password)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Получение профиля...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    return null;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info("Получение пользователя по логину");
+                    command.CommandText = "SELECT TOP(1) Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Login = @Login AND Password = @Password";
+                    command.Parameters.AddWithValue("@Login", login);
+                    command.Parameters.AddWithValue("@Password", password);
+                    try
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (!reader.Read())
+                                throw new ArgumentException($"Пользователь с данными логином и паролем не найден");
 
                             return new Profile
                             {

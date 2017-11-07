@@ -31,6 +31,19 @@ namespace Messenger.Api.Controllers
             return messagesRepository.GetMessage(id);
         }
 
+        [HttpGet]
+        [Route("api/message/chat/{id}")]
+        public IEnumerable<Message> GetMessages(Guid id)
+        {
+            List<Message> list =  messagesRepository.GetMessages(id).ToList();
+            list.Sort(delegate (Message one, Message two)
+                {
+                    return one.Date.CompareTo(two.Date);
+                }
+            );
+            return list;
+        }
+
         [HttpPost]
         [Route("api/message")]
         public Message Create([FromBody] Message message)

@@ -39,7 +39,7 @@ namespace Messenger.Api.Controllers
         public Profile Create([FromBody] Profile profile)
         {
             Profile profileAfter = profilesRepository.CreateProfile(profile);
-            if (profile == null)
+            if (profileAfter == null)
             {
                 throw new HttpException(409, "Этот логин занят.");
             }
@@ -66,7 +66,7 @@ namespace Messenger.Api.Controllers
             }
             return chats;
         }
-/*
+
         [HttpGet]
         [Route("api/profile/#{name}#{surname}")]
         public IEnumerable<Profile> GetChats(string name, string surname)
@@ -77,12 +77,12 @@ namespace Messenger.Api.Controllers
                 return null;
         }
         
-        [HttpGet]
-        [Route("api/profile/#login#{login}")]
-        public Profile GetProfile(string login)
+        [HttpPost]
+        [Route("api/profile/login")]
+        public Profile GetProfile([FromBody] Profile profile)
         {
-            return profilesRepository.GetProfile(login);
+            return profilesRepository.GetProfile(profile.Login, profile.Password);
         }
-        */
+        
     }
 }

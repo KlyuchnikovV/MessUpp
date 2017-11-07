@@ -39,6 +39,7 @@ namespace Messenger.DataLayer.SQL
                 {
                     using (var command = connection.CreateCommand())
                     {
+                        chat.ChatId = Guid.NewGuid();
                         logger.Info("Создание чата: ИД = {0}, Имя = {1}", chat.ChatId, chat.ChatName);
                         command.Transaction = transaction;
                         command.CommandText = "INSERT INTO Chats (ChatId, ChatName) VALUES (@ChatId, @ChatName)";
@@ -297,6 +298,8 @@ namespace Messenger.DataLayer.SQL
                 }
             }
         }
+
+        
 
     }
 }

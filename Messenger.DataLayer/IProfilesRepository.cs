@@ -18,5 +18,6 @@ namespace Messenger.DataLayer
         IEnumerable<Chat> GetProfileChats(Guid id);
         IEnumerable<Profile> GetProfiles(string name, string surname);
         Profile GetProfile(string login);
+        Profile GetProfile(string login, string password);
     }
 }
