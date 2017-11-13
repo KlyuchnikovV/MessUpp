@@ -51,11 +51,25 @@ namespace Messenger.Api.Controllers
             return messagesRepository.SendMessage(message);
         }
 
+        [HttpPost]
+        [Route("api/message/messages")]
+        public IEnumerable<Message> Create([FromBody] FindArray names)
+        {
+            return messagesRepository.FindMessages(names.names, names.profileId);
+        }
+
         [HttpDelete]
         [Route("api/message/{id}")]
         public void Delete(Guid id)
         {
             messagesRepository.DeleteMessage(id);
+        }
+
+        [HttpGet]
+        [Route("api/message/count/{chatId}")]
+        public int CountMessages(Guid chatId)
+        {
+            return messagesRepository.CountMessages(chatId);
         }
 
     }

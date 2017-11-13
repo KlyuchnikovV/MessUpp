@@ -209,9 +209,9 @@ namespace Messenger.DataLayer.SQL
             }
         }
 
-        public IEnumerable<Profile> GetProfiles(string name, string surname)
+        public IEnumerable<Profile> FindProfiles(string[] names)
         {
-            logger.Debug("Получение профилей.");
+            logger.Debug("Поиск профилей.");
             using (var connection = new SqlConnection(connectionString))
             {
                 try
@@ -223,13 +223,16 @@ namespace Messenger.DataLayer.SQL
                     logger.Error("Не могу подключиться к БД, {0}", exception.Message);
                     yield break;
                 }
-                using (var command = connection.CreateCommand())
+                foreach (var name in names)
                 {
-                    if(!surname.Equals(null))
+                    using (var command = connection.CreateCommand())
                     {
-                        logger.Info("Поиск пользователя по фамилиии");
-                        command.CommandText = "SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Surname = @Surname";
-                        command.Parameters.AddWithValue("@Surname", surname);
+                    
+                        logger.Info($"Поиск пользователя по строке {name}");
+                        command.CommandText = "SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Login = @Name "
+                                            + "UNION SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Name = @Name "
+                                            + "UNION SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Surname = @Name";
+                        command.Parameters.AddWithValue("@Name", name);
                         SqlDataReader reader;
                         try
                         {
@@ -240,8 +243,6 @@ namespace Messenger.DataLayer.SQL
                             logger.Error(exception.Message);
                             yield break;
                         }
-                        if (!reader.Read())
-                            throw new ArgumentException($"Пользователь с фамилией {surname} не найден");
                         while (reader.Read())
                         {
                             yield return new Profile
@@ -253,42 +254,9 @@ namespace Messenger.DataLayer.SQL
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
                                 Avatar = reader.GetSqlBinary(reader.GetOrdinal("Avatar")).Value,
                             };
+                            logger.Info($"Возвращен пользователь по строке {name}");
                         }
-                    }
-                    else if(!name.Equals(null))
-                    {
-                        logger.Info("Поиск пользователя по имени");
-                        command.CommandText = "SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Name = @Name";
-                        command.Parameters.AddWithValue("@Name", name);
-                        SqlDataReader reader;
-                        try
-                        {
-                            reader = command.ExecuteReader();
-                        }
-                        catch (SqlException exception)
-                        {
-                            logger.Error(exception.Message);
-                            yield break;
-                        }
-                        if (!reader.Read())
-                            throw new ArgumentException($"Пользователь с именем {name} не найден");
-                        while (reader.Read())
-                        {
-                            yield return new Profile
-                            {
-                                Id = reader.GetGuid(reader.GetOrdinal("Id")),
-                                Login = reader.GetString(reader.GetOrdinal("Login")),
-                                Password = reader.GetString(reader.GetOrdinal("Password")),
-                                Name = reader.GetString(reader.GetOrdinal("Name")),
-                                Surname = reader.GetString(reader.GetOrdinal("Surname")),
-                                Avatar = reader.GetSqlBinary(reader.GetOrdinal("Avatar")).Value,
-                            };
-                        }
-                    }
-                    else
-                    {
-                        logger.Error("Задан пустой запрос");
-                        yield break;
+                        reader.Close();
                     }
                 }
             }
@@ -382,6 +350,57 @@ namespace Messenger.DataLayer.SQL
                     {
                         logger.Error(exception.Message);
                         return null;
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<Profile> FindProfiles(string name)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Поиск профиля...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    yield break;
+                }
+
+                using (var command = connection.CreateCommand())
+                {
+                    if (!name.Equals(null))
+                    {
+                        logger.Info("Поиск пользователя по строке: " + name);
+                        command.CommandText = "SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Surname = @name " +
+                                              "UNION SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Name = @name " +
+                                              "UNION SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Login = @name;";
+                        command.Parameters.AddWithValue("@name", name);
+                        SqlDataReader reader;
+                        try
+                        {
+                            reader = command.ExecuteReader();
+                        }
+                        catch (SqlException exception)
+                        {
+                            logger.Error(exception.Message);
+                            yield break;
+                        }
+                        while (reader.Read())
+                        {
+                            yield return new Profile
+                            {
+                                Id = reader.GetGuid(reader.GetOrdinal("Id")),
+                                Login = reader.GetString(reader.GetOrdinal("Login")),
+                                Password = reader.GetString(reader.GetOrdinal("Password")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Surname = reader.GetString(reader.GetOrdinal("Surname")),
+                                Avatar = reader.GetSqlBinary(reader.GetOrdinal("Avatar")).Value,
+                            };
+                        }
                     }
                 }
             }

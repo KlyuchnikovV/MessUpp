@@ -299,7 +299,52 @@ namespace Messenger.DataLayer.SQL
             }
         }
 
-        
+        public IEnumerable<Chat> FindChats(String[] names, Guid profileId)
+        {
+            logger.Debug("Поиск чатов.");
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    yield break;
+                }
+                foreach (var name in names)
+                {
+                    using (var command = connection.CreateCommand())
+                    {
 
+                        logger.Info($"Поиск чатов по строке '{name}'");
+                        command.CommandText = "SELECT Chats.ChatId, Chats.ChatName FROM Chats Join ChatMembers on Chats.ChatId = ChatMembers.ChatId WHERE Chats.ChatName Like @Name And ProfileId = @ProfileId";
+                        command.Parameters.AddWithValue("@Name", "%" + name + "%");
+                        command.Parameters.AddWithValue("@ProfileId", profileId);
+                        SqlDataReader reader;
+                        try
+                        {
+                            reader = command.ExecuteReader();
+                        }
+                        catch (SqlException exception)
+                        {
+                            logger.Error(exception.Message);
+                            yield break;
+                        }
+                        while (reader.Read())
+                        {
+                            yield return new Chat
+                            {
+                                ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
+                                ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
+                                ChatMembers = GetChatMembers(reader.GetGuid(reader.GetOrdinal("ChatId")))
+                            };
+                        }
+                        reader.Close();
+                    }
+                }
+            }
+        }
     }
 }

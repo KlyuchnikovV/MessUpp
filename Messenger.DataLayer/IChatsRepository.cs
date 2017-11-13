@@ -17,6 +17,6 @@ namespace Messenger.DataLayer
         void AddChatMember(Guid userId, Guid chatId);
         void DeleteChatMember(Guid userId, Guid chatId);
         IEnumerable<Chat> GetChat(string chatName);
-
+        IEnumerable<Chat> FindChats(String[] names, Guid profileId);
     }
 }

@@ -234,6 +234,22 @@ $(document).ready(function(){
     //PopUp("Добро пожаловать, Admin!", 0, true);
     PopUp("Добро пожаловать, " + profile.Surname + " " + profile.Name + "!", 0, true);
 
+
+    setInterval(
+        function()
+        {
+            UpdateMessages();
+        }
+    , 1000);
+
+    var options = {
+        data: ["blue", "green", "pink", "red", "yellow"]
+    };
+    
+    $("#txtChatName").easyAutocomplete(options);
+    $("#findString").easyAutocomplete(options);
+    $("#messageArea").easyAutocomplete(options);
+    
 });	
 
 function PopUp(message, type, isAutoClose)
@@ -248,13 +264,13 @@ function PopUp(message, type, isAutoClose)
         case 0:
         {
             popUp.setAttribute("style", 
-                "z-index:99;visibility:visible;color:#FFFFFF; height:40px; width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; background-color:#53472A;-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
+                "background:#808080;z-index:99;visibility:visible;color:#018813; height:40px; width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px;-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
             break;
         }
         case 1:
         {
             popUp.setAttribute("style", 
-                "z-index:99;visibility:visible;color:#A60000; height:40px; width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; background-color:#53472A;-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
+                "background:#808080;z-index:99;visibility:visible;color:#a30101; height:40px; width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px;-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
             break;
         }
     }
@@ -287,3 +303,6 @@ function ClosePopUp()
 {
     $("div.popUp").animate({top:'-60px'},500);
 }
+
+
+  

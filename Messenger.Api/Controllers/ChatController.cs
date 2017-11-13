@@ -30,6 +30,27 @@ namespace Messenger.Api.Controllers
             return chatsRepository.GetChat(id);
         }
 
+        [HttpGet]
+        [Route("api/chat/{id}/profiles")]
+        public IEnumerable<Profile> GetProfiles(Guid id)
+        {
+            return chatsRepository.GetChatMembers(id);
+        }
+
+        [HttpPost]
+        [Route("api/chat/chats")]
+        public IEnumerable<Chat> FindChats([FromBody]FindArray names)
+        {
+            return chatsRepository.FindChats(names.names, names.profileId);
+        }
+
+        [HttpGet]
+        [Route("api/chat/{id}/{personId}")]
+        public void AddMember(Guid id, Guid personId)
+        {
+            chatsRepository.AddChatMember(personId, id);
+        }
+
         [HttpPost]
         [Route("api/chat")]
         public Chat Create([FromBody] Chat chat)
@@ -44,13 +65,5 @@ namespace Messenger.Api.Controllers
             chatsRepository.DeleteChat(id);
         }
 
-        /*
-        // Additional methods.
-        [HttpGet]
-        [Route("api/chat/{name}")]
-        public IEnumerable<Chat> GetChat(string name)
-        {
-            return chatsRepository.GetChat(name);
-        }*/
     }
 }

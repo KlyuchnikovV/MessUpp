@@ -11,12 +11,19 @@ using System.Web;
 
 namespace Messenger.Api.Controllers
 {
+    public class FindArray
+    {
+        public String[] names { get; set; }
+        public Guid profileId { get; set; }
+    }
+
     public class ProfileController : ApiController
     {
         private readonly IProfilesRepository profilesRepository;
         private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
                                                   Initial Catalog=MessengerDB; 
                                                   Integrated Security=TRUE; ";
+
         public ProfileController()
         {
             profilesRepository = new ProfilesRepository(ConnectionString);
@@ -67,16 +74,26 @@ namespace Messenger.Api.Controllers
             return chats;
         }
 
-        [HttpGet]
-        [Route("api/profile/#{name}#{surname}")]
-        public IEnumerable<Profile> GetChats(string name, string surname)
+        [HttpPost]
+        [Route("api/profile/profiles")]
+        public IEnumerable<Profile> GetChats([FromBody]FindArray names)
         {
-            if (!name.Equals(null) || !surname.Equals(null))
-                return profilesRepository.GetProfiles(name, surname);
+            if (!names.Equals(null))
+                return profilesRepository.FindProfiles(names.names).Distinct();
             else
                 return null;
         }
-        
+
+        [HttpGet]
+        [Route("api/profile/find/{name}")]
+        public IEnumerable<Profile> GetChats(string name)
+        {
+            if (!name.Equals(null))
+                return profilesRepository.FindProfiles(name);
+            else
+                return null;
+        }
+
         [HttpPost]
         [Route("api/profile/login")]
         public Profile GetProfile([FromBody] Profile profile)

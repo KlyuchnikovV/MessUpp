@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Messenger App. Version 0.1.0</title>
+        <title>Messenger App. Version 0.2.0</title>
         <script type="text/javascript" src="js/rest.js"></script>
         <script type="text/javascript" src="js/mainActions.js"></script>
         <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
-        <script language="javascript" type="text/javascript">
+        <!-- JS file -->
+        <script src="../node_modules/easy-autocomplete/dist/jquery.easy-autocomplete.min.js"></script> 
 
-        </script>
+        <!-- CSS file -->
+        <link rel="stylesheet" href="../node_modules/easy-autocomplete/dist/easy-autocomplete.min.css"> 
+
+        <!-- Additional CSS Themes file - not required-->
+        <link rel="stylesheet" href="../node_modules/easy-autocomplete/dist/easy-autocomplete.themes.min.css">
         <style>
             .body
             {
                 margin:0px;
-                overflow: hidden;/**/
+                /*overflow: hidden;*/
                 background-color: #202020;
+                /*background-color: #018813; */
 				min-width:765px;
             }
 
@@ -48,7 +54,8 @@
                 -webkit-filter: invert(100%);
                 filter: invert(100%);
             }
-            .chatNodes
+            .chatNodes,
+            .personeNodes
             {
                 background-color:#1C2139; 
                 color: #ffffff;
@@ -117,7 +124,6 @@
                 position:absolute; /*обязательное свойство*/
                 top:-50px; /*обязательное свойство*/
                 left:240vw; /*обязательное свойство*/
-                background:#808080;
             }
 
             .messageBox,
@@ -157,6 +163,16 @@
                 /*overflow:auto; */
             }
 
+            .divButton > input
+            {
+                display: none;
+            }
+
+            .divButton img
+            {
+                cursor: pointer;
+            }
+    
 			.dialogMeta
 			{
 				position:absolute;
@@ -208,38 +224,37 @@
                 -webkit-border-radius: 9px;
                 padding-left: 5px;
             }
+
+            .easy-autocomplete
+            {
+                flex :1;
+            }
+
         </style>
     </head>
-
     <body onload="OnLoad()" class="body">
         <div class="cmdPanel">
             <div class="divButtonChats" id="chats">
                 <img class="icon" src="./img/chats.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Чаты">
             </div>
-
             <div class="divButtonCreate" id="create">
                 <img class="icon" src="./img/createChat.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Создать чат">
             </div>
-
             <div class="divButtonFind">
                 <img class="icon" src="./img/find.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Поиск">
             </div>
-
             <div class="divButtonSettings">
                 <img class="icon" src="./img/settings.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Настройки"/>
             </div>
-
-            <!-- Form? --> 
             <div class="divButtonPeople">
                 <img class="icon" src="./img/people2.png" height="25px" width="25px" vspace="5px" hspace="6px" title="Пользователи">
             </div>
-
             <div class="divButtonLogout" id="divButtonLogout">
                 <img class="icon" src="./img/logout.png" height="25px" width="25px" vspace="5px" hspace="6px" title="Выход">
             </div>
         </div>
-        <!-- Selecting user to send message and to add to dialog, add searching, settings and image for chat -->
-        <!-- Seacrh must split messages, chats and users -->
+        <!-- Selecting user to send message and to add to dialog, add searching, settings -->
+        <!-- Seacrh users(add button for add to chat) -->
         <div class="slidePanelWrap">	
             <div class="chatsPanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
@@ -249,43 +264,35 @@
                     <label class="label" style="color:#ffffff">Здесь пока нет ни одного чата:(</label> 
                 </div>
             </div>
-            <input type="hidden" id="chatsHidden" value="false"/>
-
             <div class="createPanel" align="center">
                 <div style="color: rgb(64, 64, 179);" >
                     <label class="label"><br/><h1>Создать чат</h1></label>
                 </div>
-    
                 <div id="divChatName" class="inputBox">
                     <label class="label" style="color:#ffffff">Название чата:<br/><br/></label>
                     <div>
                         <input class="createChatArea" id="txtChatName" class="textbox"  type="textbox" value="Testing chat"/>
                     </div>
                 </div>
-    
                 <div id="divButtons">
                     <br/>
                     <input id="createButton" class="createChatArea" value="Создать чат" type="button" onclick="CreateChat()"/>
                 </div>
             </div>
-
-            <input type="hidden" id="createHidden" value="false"/>
-
             <div class="findPanel" align="center">
                 <div style="color: rgb(64, 64, 179);" >
                     <label class="label"><br/><h1>Поиск:</h1></label>
                 </div>
-                <input class="createChatArea" type="textbox"><br/><br/>
-                <button class="createChatArea">Найти</button>                
+                <input class="createChatArea" type="textbox" id="findString"><br/><br/>
+                <button class="createChatArea" onclick="Find()">Найти</button>   
+                <div id="searchResults">
+                </div>             
             </div>
-            <input type="hidden" id="findHidden" value="false"/>
-
             <div class="settingsPanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Настройки:</h1></label>
                 </div>
             </div>
-
             <div class="logoutPanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Выход из сети</h1></label>
@@ -294,24 +301,25 @@
                     <button class="createChatArea" style="display:inline" onclick="document.getElementById('divButtonLogout').click()">Вернуться</button>
                 </div>
             </div>
-
             <div class="peoplePanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Пользователи</h1></label>
                 </div>
+                <div id="chatProfiles">
+                    <label style="color:#ffffff">Чат не выбран</label>
+                </div>
             </div>
-
+            <input type="hidden" id="chatsHidden" value="false"/>            
+            <input type="hidden" id="findHidden" value="false"/>            
+            <input type="hidden" id="createHidden" value="false"/>            
             <input type="hidden" id="logoutHidden" value="false"/>
             <input type="hidden" id="peopleHidden" value="false"/>
             <input type="hidden" id="settingsHidden" value="false"/>
-            
         </div>	
-        <!-- All errors must be showed by popUp message -->
         <div class="popUp" id="popUp" style="z-index:99;visibility:hidden; height:40px; width:50vw; position:absolute; left:25vw; top:20px">
             <label id="popUpMessage"></label>
         </div>
-        <!-- Fix colors, add attachments, show it in dialog window and add intelliSense(?) -->
-        <!-- Read users, names of chats, messages and hashing it on device before run app(?) -->
+        <!-- Show attachs in dialog window -->
         <div class="dialogPanel">
 			<div class="dialogMeta" id="dialogMeta">
                 <img src="./img/chatWithoutImage.png" height="25px" width="25px" vspace="5px" hspace="5px" style="display:inline-block"/>
@@ -322,18 +330,49 @@
             </div>
     
             <div class="messageBox" style="background-color:#202020;visibility:hidden;width:100%; height:39px; position:absolute; bottom:3px; left: 0px; min-width:765px" id="messageBox">
+                <div id="preview" style="position:absolute;left:35px;height:100px;width:100px;">
+                    </div>                    
                 <div class="divButton" id="attachButton" style="background-color:#202020;width:35px; display:inline-block;position:absolute;bottom:5px;">
-                    <img class="icon" src="./img/attach.png" height="25px" width="25px" vspace="5px" hspace="4px" title="Прикрепить файл"/>
-                </div>
-                <textarea class="messageArea" style="position:absolute;left:35px;resize:none;bottom:0; overflow:hidden; overflow-y: scroll; min-width:600px;height:39px; width:calc(100% - 95px)" id="messageArea"></textarea>
+                    <label for="file-input">
+                        <img class="icon" src="./img/attach.png" height="25px" width="25px" vspace="5px" hspace="4px" title="Прикрепить файл"/>                            
+                    </label>    
+                    <input id="file-input" type="file" style="width:25px; height:25px"/>
+                </div>             
+                <textarea class="messageArea" style="position:absolute;left:35px;resize:none;bottom:0;overflow:hidden; overflow-y: scroll; min-width:600px;height:39px; width:calc(100% - 95px)" id="messageArea"></textarea>
                 <div class="divButton" id="sendButton" style="background-color:#202020;width:35px;display:inline-block; position:absolute; left:calc(100% - 40px);bottom:3px;" onclick="SendMessage();">
                     <img class="icon" src="./img/send.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Отправить"/>
                 </div>
+                <script>
+                    (function() 
+                    {
+                        var inpElem = document.getElementById('file-input'),
+                            divElem = document.getElementById('preview');
+                        inpElem.addEventListener("change", function(e) {
+                            preview(this.files[0]);
+                        });
+                        function preview(file) {
+                        if ( file.type.match(/image.*/) ) {
+                            document.getElementById('messageBox').setAttribute("style", 
+                            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:139px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+
+                            var reader = new FileReader(), img;
+                            reader.addEventListener("load", 
+                            function(event) 
+                            {
+                                img = document.createElement('img');
+                                img.src = event.target.result;
+                                divElem.appendChild(img);
+                            });
+                            reader.readAsDataURL(file);
+                        }
+                        }
+                    })();
+                </script>
             </div>
         </div>     
-
-        <input type="hidden" id="profileId" value="d3f55b8e-2782-4ba9-8d5f-a8e89c397b91"/>   
-        <input type="hidden" id="chatId" value="F8616824-D8A5-497A-B8FE-EE7DC55E7D06"/>     
+        <input type="hidden" id="profileId" value=""/>   
+        <input type="hidden" id="chatId" value=""/>  
+        <input type="hidden" id="cache" value="Привет$"/>
+        <input type="hidden" id="count" value="0"/>   
     </body>
-
 </html>

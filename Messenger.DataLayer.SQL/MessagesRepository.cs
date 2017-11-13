@@ -170,5 +170,86 @@ namespace Messenger.DataLayer.SQL
                 }
             }
         }
+
+        public int CountMessages(Guid chatId)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Подсчет сообщений чата...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    return -1;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info("Получение сообщений чата {0}", chatId);
+                    command.CommandText = "SELECT Count(*) as count FROM Messages WHERE ChatId = @ChatId";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                            return (reader.GetInt32(reader.GetOrdinal("count")));
+                    }
+                }
+            }
+            return -1;
+        }
+
+        public IEnumerable<Message> FindMessages(String[] names, Guid profileId)
+        {
+            logger.Debug("Поиск по сообщениям.");
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    yield break;
+                }
+                foreach (var name in names)
+                {
+                    using (var command = connection.CreateCommand())
+                    {
+
+                        logger.Info($"Поиск сообщений по строке {name}");
+                        command.CommandText = "SELECT * FROM Messages WHERE MessageText Like @name And ProfileId = @ProfileId ";
+                        command.Parameters.AddWithValue("@Name", "%" + name + "%");
+                        command.Parameters.AddWithValue("@ProfileId", profileId);
+                        SqlDataReader reader;
+                        try
+                        {
+                            reader = command.ExecuteReader();
+                        }
+                        catch (SqlException exception)
+                        {
+                            logger.Error(exception.Message);
+                            yield break;
+                        }
+                        while (reader.Read())
+                        {
+                            yield return new Message
+                            {
+                                MessageId = reader.GetGuid(reader.GetOrdinal("MessageId")),
+                                ProfileId = reader.GetGuid(reader.GetOrdinal("ProfileId")),
+                                ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
+                                MessageText = reader.GetString(reader.GetOrdinal("MessageText")),
+                                Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
+                                TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
+                                Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                            };
+                        }
+                        reader.Close();
+                    }
+                }
+            }
+        }
     }
 }

@@ -13,5 +13,7 @@ namespace Messenger.DataLayer
         Message GetMessage(Guid id);
         void DeleteMessage(Guid id);
         IEnumerable<Message> GetMessages(Guid chatId);
+        int CountMessages(Guid chatId);
+        IEnumerable<Message> FindMessages(String[] names, Guid profileId);
     }
 }
