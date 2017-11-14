@@ -38,7 +38,7 @@ namespace Messenger.Api.Controllers
         }
 
         [HttpPost]
-        [Route("api/chat/chats")]
+        [Route("api/chat/find/chats")]
         public IEnumerable<Chat> FindChats([FromBody]FindArray names)
         {
             return chatsRepository.FindChats(names.names, names.profileId);

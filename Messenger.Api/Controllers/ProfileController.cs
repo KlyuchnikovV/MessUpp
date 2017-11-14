@@ -7,10 +7,11 @@ using System.Web.Http;
 using Messenger.Model;
 using Messenger.DataLayer;
 using Messenger.DataLayer.SQL;
-using System.Web;
+using System.Data.SqlClient;
 
 namespace Messenger.Api.Controllers
 {
+    // Move to another file and expand. //
     public class FindArray
     {
         public String[] names { get; set; }
@@ -29,76 +30,139 @@ namespace Messenger.Api.Controllers
             profilesRepository = new ProfilesRepository(ConnectionString);
         }
 
-        [HttpGet]
-        [Route("api/profile/{id}")]
-        public Profile Get(Guid id)
-        {
-            Profile profile =  profilesRepository.GetProfile(id);
-            if(profile == null)
-            {
-                throw new HttpException(404, "HTTP/1.1 404 Not Found");
-            }
-            return profile;
-        }
-
         [HttpPost]
         [Route("api/profile")]
         public Profile Create([FromBody] Profile profile)
         {
-            Profile profileAfter = profilesRepository.CreateProfile(profile);
-            if (profileAfter == null)
+            try
             {
-                throw new HttpException(409, "Этот логин занят.");
+                return profilesRepository.CreateProfile(profile);
             }
-            return profileAfter;
+            catch(SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+            catch(Exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.Conflict)
+                {
+                    Content = new StringContent("Профиль с таким логином уже существует.")
+                };
+                throw new HttpResponseException(response);
+            }
         }
+
+        [HttpGet]
+        [Route("api/profile/{id}")]
+        public Profile Get(Guid id)
+        {
+            try
+            {
+                return profilesRepository.GetProfile(id);
+            }
+            catch(SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            } 
+        }        
 
         [HttpDelete]
         [Route("api/profile/{id}")]
         public void Delete(Guid id)
         {
-            profilesRepository.DeleteProfile(id);
+            try
+            {
+                profilesRepository.DeleteProfile(id);
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
-
-        // Additional methods api.
         [HttpGet]
         [Route("api/profile/{id}/chats")]
-        public IEnumerable<Chat> GetChats(Guid id)
+        public IEnumerable<Chat> GetProfileChats(Guid id)
         {
-            List<Chat> chats = profilesRepository.GetProfileChats(id).ToList();
-            if (chats == null)
+            try
             {
-                throw new HttpException(404, "HTTP/1.1 404 Not Found");
+                return profilesRepository.GetProfileChats(id).ToList();
             }
-            return chats;
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
         [HttpPost]
-        [Route("api/profile/profiles")]
-        public IEnumerable<Profile> GetChats([FromBody]FindArray names)
+        [Route("api/profile/find/profiles")]
+        public IEnumerable<Profile> FindProfiles([FromBody]FindArray names)
         {
-            if (!names.Equals(null))
+            try
+            { 
                 return profilesRepository.FindProfiles(names.names).Distinct();
-            else
-                return null;
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
+        /* Deprecated
         [HttpGet]
         [Route("api/profile/find/{name}")]
         public IEnumerable<Profile> GetChats(string name)
         {
             if (!name.Equals(null))
-                return profilesRepository.FindProfiles(name);
+                return profilesRepository.FindProfiles( new string[] { name } );
             else
                 return null;
-        }
+        }*/
 
         [HttpPost]
         [Route("api/profile/login")]
         public Profile GetProfile([FromBody] Profile profile)
         {
-            return profilesRepository.GetProfile(profile.Login, profile.Password);
+            try
+            {
+                return profilesRepository.GetProfile(profile.Login, profile.Password);
+            }
+            catch(SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+            catch(Exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NonAuthoritativeInformation)
+                {
+                    Content = new StringContent("Пользователь с данными логином и паролем не найден")
+                };
+                throw new HttpResponseException(response);
+            }
         }
         
     }

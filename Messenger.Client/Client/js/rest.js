@@ -431,7 +431,7 @@ function Find()
 	results .innerHTML = "";
 	var reg = /\s*,\s*/;
 	var array = string.split(reg);
-	var url = profileUrl + "/profiles";
+	var url = profileUrl + "find/profiles";
 	if(array.length < 1)
 	{
 		PopUp("Ошибка поиска: пустой запрос", 1, false);			
@@ -509,7 +509,7 @@ function Find()
 	}
 
 
-	url = chatUrl + "/chats";
+	url = chatUrl + "find/chats";
 
 	request.open('POST', url, false);
 	request.setRequestHeader("Content-type", "application/json");
@@ -568,7 +568,7 @@ function Find()
 		}
 	}
 
-	url = messageUrl + "/messages";
+	url = messageUrl + "find/messages";
 	
 	request.open('POST', url, false);
 	request.setRequestHeader("Content-type", "application/json");
@@ -682,7 +682,7 @@ function UpdateMessages()
 	var chatId = document.getElementById("chatId").value;
 	if(chatId == "")
 		return;
-	var url = messageUrl + "/count/" + chatId;
+	var url = messageUrl + "chat/" + chatId + "count";
 	request.open('GET', url, false);
 
 	try

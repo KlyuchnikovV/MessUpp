@@ -7,6 +7,7 @@ using System.Web.Http;
 using Messenger.Model;
 using Messenger.DataLayer;
 using Messenger.DataLayer.SQL;
+using System.Data.SqlClient;
 
 namespace Messenger.Api.Controllers
 {
@@ -24,53 +25,126 @@ namespace Messenger.Api.Controllers
             messagesRepository = new MessagesRepository(ConnectionString);
         }
 
-        [HttpGet]
-        [Route("api/message/{id}")]
-        public Message Get(Guid id)
-        {
-            return messagesRepository.GetMessage(id);
-        }
-
-        [HttpGet]
-        [Route("api/message/chat/{id}")]
-        public IEnumerable<Message> GetMessages(Guid id)
-        {
-            List<Message> list =  messagesRepository.GetMessages(id).ToList();
-            list.Sort(delegate (Message one, Message two)
-                {
-                    return one.Date.CompareTo(two.Date);
-                }
-            );
-            return list;
-        }
-
         [HttpPost]
         [Route("api/message")]
         public Message Create([FromBody] Message message)
         {
-            return messagesRepository.SendMessage(message);
+            try
+            {
+                return messagesRepository.SendMessage(message);
+            }
+            catch(SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
-        [HttpPost]
-        [Route("api/message/messages")]
-        public IEnumerable<Message> Create([FromBody] FindArray names)
+        [HttpGet]
+        [Route("api/message/{id}")]
+        public Message Get(Guid id)
         {
-            return messagesRepository.FindMessages(names.names, names.profileId);
+            try
+            {
+                return messagesRepository.GetMessage(id);
+            }
+            catch(SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+            catch(Exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.Conflict)
+                {
+                    Content = new StringContent("Сообщение не найдено")
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
         [HttpDelete]
         [Route("api/message/{id}")]
         public void Delete(Guid id)
         {
-            messagesRepository.DeleteMessage(id);
+            try
+            { 
+                messagesRepository.DeleteMessage(id);
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
         [HttpGet]
-        [Route("api/message/count/{chatId}")]
-        public int CountMessages(Guid chatId)
+        [Route("api/message/chat/{id}")]
+        public IEnumerable<Message> GetMessages(Guid id)
         {
-            return messagesRepository.CountMessages(chatId);
+            try
+            {
+                List<Message> list =  messagesRepository.GetMessages(id).ToList();
+                list.Sort(delegate (Message one, Message two)
+                    {
+                        return one.Date.CompareTo(two.Date);
+                    }
+                );
+                return list;
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
         }
 
+        [HttpGet]
+        [Route("api/message/chat/{chatId}/count")]
+        public int CountMessages(Guid chatId)
+        {
+            try
+            { 
+                return messagesRepository.CountMessages(chatId);
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+        }
+
+        [HttpPost]
+        [Route("api/message/find/messages")]
+        public IEnumerable<Message> FindMessages([FromBody] FindArray names)
+        {
+            try
+            { 
+                return messagesRepository.FindMessages(names.names, names.profileId);
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+        }
     }
 }

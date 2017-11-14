@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Messenger.DataLayer;
 using Messenger.Model;
 using System.Data.SqlClient;
 using NLog;
@@ -20,78 +16,7 @@ namespace Messenger.DataLayer.SQL
             connectionString = _connectionString;
         }
 
-        public void DeleteMessage(Guid id)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                logger.Debug("Удаление сообщения...");
-                try
-                {
-                    connection.Open();
-                }
-                catch (SqlException exception)
-                {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return;
-                }
-                using (var command = connection.CreateCommand())
-                {
-                    logger.Info("Удаление сообщения {0}", id);
-                    command.CommandText = "DELETE FROM Messages WHERE MessageId = @MessageId";
-                    command.Parameters.AddWithValue("@MessageId", id);
-                    try
-                    {
-                        command.ExecuteNonQuery();
-                    }
-                    catch (SqlException exc)
-                    {
-                        logger.Error(exc.Message);
-                        return;
-                    }
-                }
-            }
-        }
-
-        public Message GetMessage(Guid id)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                logger.Debug("Получение сообщения...");
-                try
-                {
-                    connection.Open();
-                }
-                catch (SqlException exception)
-                {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return null;
-                }
-                using (var command = connection.CreateCommand())
-                {
-                    logger.Info("Получение сообщения {0}", id);
-                    command.CommandText = "SELECT TOP(1) * FROM Messages WHERE MessageId = @MessageId";
-                    command.Parameters.AddWithValue("@MessageId", id);
-
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                            throw new ArgumentException($"Сообщение с id {id} не найден");
-
-                        return new Message
-                        {
-                            MessageId = reader.GetGuid(reader.GetOrdinal("MessageId")),
-                            ProfileId = reader.GetGuid(reader.GetOrdinal("ProfileId")),
-                            ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
-                            MessageText = reader.GetString(reader.GetOrdinal("MessageText")),
-                            Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
-                            TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
-                            Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
-                        };
-                    }
-                }
-            }
-        }
-
+        // Создает новое сообщение в чате. //
         public Message SendMessage(Message message)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -103,8 +28,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return null;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
@@ -124,16 +49,91 @@ namespace Messenger.DataLayer.SQL
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (SqlException exc)
+                    catch (SqlException exception)
                     {
-                        logger.Error(exc.Message);
-                        return null;
+                        logger.Error(exception.Message);
+                        throw exception;
                     }
                     return message;
                 }
             }
         }
 
+        // Получает сообщение по ИД. //
+        public Message GetMessage(Guid id)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Получение сообщения...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info($"Получение сообщения {id}");
+                    command.CommandText = "SELECT TOP(1) * FROM Messages WHERE MessageId = @MessageId";
+                    command.Parameters.AddWithValue("@MessageId", id);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                            throw new Exception($"Сообщение с id {id} не найден");
+
+                        return new Message
+                        {
+                            MessageId = reader.GetGuid(reader.GetOrdinal("MessageId")),
+                            ProfileId = reader.GetGuid(reader.GetOrdinal("ProfileId")),
+                            ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
+                            MessageText = reader.GetString(reader.GetOrdinal("MessageText")),
+                            Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
+                            TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
+                            Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                        };
+                    }
+                }
+            }
+        }
+
+        // Удаляет сообщение по ИД. //
+        public void DeleteMessage(Guid id)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Удаление сообщения...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info($"Удаление сообщения {id}");
+                    command.CommandText = "DELETE FROM Messages WHERE MessageId = @MessageId";
+                    command.Parameters.AddWithValue("@MessageId", id);
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        throw exception;
+                    }
+                }
+            }
+        }
+
+        // Получает все сообщения чата. //
         public IEnumerable<Message> GetMessages(Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -146,7 +146,7 @@ namespace Messenger.DataLayer.SQL
                 catch (SqlException exception)
                 {
                     logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    yield break;
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
@@ -171,6 +171,7 @@ namespace Messenger.DataLayer.SQL
             }
         }
 
+        // Подсчитывает все сообщения чата(например для мониторинга новых сообщений). //
         public int CountMessages(Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -182,12 +183,12 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return -1;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info("Получение сообщений чата {0}", chatId);
+                    logger.Info($"Получение сообщений чата {chatId}");
                     command.CommandText = "SELECT Count(*) as count FROM Messages WHERE ChatId = @ChatId";
                     command.Parameters.AddWithValue("@ChatId", chatId);
                     using (var reader = command.ExecuteReader())
@@ -197,9 +198,10 @@ namespace Messenger.DataLayer.SQL
                     }
                 }
             }
-            return -1;
+            return 0;
         }
 
+        // Ищет все сообщения . // Надо исправить чтобы искал по всем чатам пользователя
         public IEnumerable<Message> FindMessages(String[] names, Guid profileId)
         {
             logger.Debug("Поиск по сообщениям.");
@@ -211,8 +213,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    yield break;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 foreach (var name in names)
                 {
@@ -231,7 +233,7 @@ namespace Messenger.DataLayer.SQL
                         catch (SqlException exception)
                         {
                             logger.Error(exception.Message);
-                            yield break;
+                            throw exception;
                         }
                         while (reader.Read())
                         {

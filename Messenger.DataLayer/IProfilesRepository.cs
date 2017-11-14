@@ -9,16 +9,25 @@ namespace Messenger.DataLayer
 {
     public interface IProfilesRepository
     {
+        // Создание нового профиля. //
         Profile CreateProfile(Profile newProfile);
+
+        // Переписывает информацию о пользователе. //
         Profile GetProfile(Guid id);
+
+        // Возвращает профиль пользователя с данным ИД. // 
         Profile ChangeProfileData(Profile newData);
+
+        //  Удаляет профиль пользователя с данным ИД. //
         void DeleteProfile(Guid id);
 
-        // Additional methods.
+        // Возвращает коллекцию чатов, в которых состоит пользователь с данным ИД. //
         IEnumerable<Chat> GetProfileChats(Guid id);
+
+        // Возвращает коллекцию профилей с данными именем, фамилией или логином. //
         IEnumerable<Profile> FindProfiles(string[] names);
-        Profile GetProfile(string login);
+
+        // Возвращает профиль с данными логином и паролем, используется для входа. //
         Profile GetProfile(string login, string password);
-        IEnumerable<Profile> FindProfiles(string name);
     }
 }

@@ -166,8 +166,6 @@ namespace Messenger.DataLayer.SQL
             }
         }
 
-
-        // Additional methods.
         public IEnumerable<Chat> GetChat(string chatName)
         {
             using (var connection = new SqlConnection(connectionString))
