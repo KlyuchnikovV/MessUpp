@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Api", "Messenger.
 		{AD1F71E2-7C4E-4E30-9AF6-65A83B98ACE5} = {AD1F71E2-7C4E-4E30-9AF6-65A83B98ACE5}
 	EndProjectSection
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Messenger.Client", "Messenger.Client\Messenger.Client.njsproj", "{3A6B1A9E-61C7-4176-B4E8-4F5310E833EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{D5070085-9FE1-4A64-8F9B-09369055207F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5070085-9FE1-4A64-8F9B-09369055207F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5070085-9FE1-4A64-8F9B-09369055207F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A6B1A9E-61C7-4176-B4E8-4F5310E833EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A6B1A9E-61C7-4176-B4E8-4F5310E833EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A6B1A9E-61C7-4176-B4E8-4F5310E833EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A6B1A9E-61C7-4176-B4E8-4F5310E833EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

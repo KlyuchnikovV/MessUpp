@@ -289,6 +289,7 @@ $(document).ready(function(){
             switch(file.type)
             {
                 case 'text/plain':
+                case 'application/plain':
                 {
                     img.src = "img/fileIcons/txtFile.png";
                     break;
@@ -313,6 +314,8 @@ $(document).ready(function(){
                     break;
                 }
                 case 'application/zip':
+                case 'application/x-compressed':
+                case 'application/x-zip-compressed':
                 {
                     img.src = "img/fileIcons/zipFile.png";
                     break;
@@ -320,6 +323,43 @@ $(document).ready(function(){
                 case 'application/x-compress':
                 {
                     img.src = "img/fileIcons/7zipFile.png";
+                    break;
+                }
+                case 'application/rtf':
+                case 'application/x-rtf':
+                case 'text/richtext':
+                {
+                    img.src = "img/fileIcons/rtfFile.png";
+                    break;
+                }
+                case 'application/mspowerpoint':
+                case 'application/powerpoint':
+                case 'application/vnd.ms-powerpoint':
+                case 'application/x-mspowerpoint':
+                {
+                    img.src = "img/fileIcons/pptFile.png";
+                    break;
+                }
+                case 'audio/mpg':
+                case 'video/mpg':
+                {
+                    img.src = "img/fileIcons/mpgFile.png";
+                    break;
+                }
+                case 'video/mp4':
+                {
+                    img.src = "img/fileIcons/mp4File.png";
+                    break;
+                }
+                case 'audio/wav':
+                case 'audio/x-wav':
+                {
+                    img.src = "img/fileIcons/wavFile.png";
+                    break;
+                }
+                case 'audio/octet-stream':
+                {
+                    img.src = "img/fileIcons/exeFile.png";
                     break;
                 }
                 default:

@@ -68,6 +68,10 @@
             <div class="settingsPanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Настройки:</h1></label>
+                    <div align="center"onclick="DeleteProfile()"class="divButton">
+                        <label class="label" style="position:absolute;background-color:red;margin-top:5px;margin-left:5px;">Удалить профиль:</label>
+                        <img src="./img/close.png" height="25px" width="25px" vspace="10px" hspace="5px" style="display:inline-block;"  >                    
+                    </div>
                 </div>
             </div>
             <div class="logoutPanel" align="center">
@@ -99,15 +103,16 @@
         </div>
         <!-- Сделать отображение файлов -->
         <!-- Панель чата -->
-        <div class="dialogPanel">
+        <div class="dialogPanel" id="dialogPanel">
 			<div class="dialogMeta" id="dialogMeta">
                 <img src="./img/chatWithoutImage.png" height="25px" width="25px" vspace="5px" hspace="5px" style="display:inline-block"/>
-				<label id="dialogName" class="dialogName" style="display:inline-block; margin-bottom:5px"></label>
+                <label id="dialogName" class="dialogName" style="display:inline-block; margin-bottom:5px"></label>
+                <img src="./img/close.png" height="25px" width="25px" vspace="5px" hspace="5px" style="display:inline-block;position:absolute;margin-left:90%" onclick="DeleteChatProfile()" class="divButton">
 			</div>
 
             <div id="dialog" class="dialog">
             </div>
-            <div class="messageBox" style="background-color:#202020; /*visibility:hidden;*/ width:100%; height:39px; position:absolute; bottom:3px; left: 0px; min-width:765px" id="messageBox">
+            <div class="messageBox" style="background-color:#202020;visibility:hidden;width:100%; height:39px; position:absolute; bottom:3px; left: 0px; min-width:765px" id="messageBox">
                 <div id="preview" style="position:absolute;left:35px;height:110px;width:100px;resize:none;top:5px; bottom:5px;display:inline-block">
                 </div>
                 <div class="divButton" id="attachButton" style="background-color:#202020;width:35px; display:inline-block;position:absolute;bottom:5px;">
@@ -120,94 +125,6 @@
                 <div class="divButton" id="sendButton" style="background-color:#202020;width:35px;display:inline-block; position:absolute; left:calc(100% - 40px);bottom:3px;" onclick="SendMessage();">
                     <img class="icon" src="./img/send.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Отправить"/>
                 </div>
-                <script>
-                    (function()
-                    {
-                        var inpElem = document.getElementById('file-input'),
-                            divElem = document.getElementById('preview');
-                        
-                        inpElem.addEventListener("change", function(e) {
-                            preview(this.files[0]);
-                        });
-                        function preview(file) 
-                        {
-                            divElem.innerHTML = "";
-                            inpElem.innerHTML = inpElem.innerHTML;
-                            if ( file.type.match(/image.*/) ) 
-                            {
-                                document.getElementById('messageBox').setAttribute("style",
-                                "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
-
-                                var reader = new FileReader(), img;
-                                reader.addEventListener("load",
-                                function(event)
-                                {
-                                    img = document.createElement('img');
-                                    img.setAttribute("style", "top:5px;height:100px;width:100%;display:inline-block");
-                                    img.setAttribute("id", "previewImage");
-                                    img.src = event.target.result;
-                                    divElem.appendChild(img);
-                                });
-                                reader.readAsDataURL(file);
-                            }
-                            else
-                            {
-                                document.getElementById('messageBox').setAttribute("style",
-                                "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
-
-                                var img;
-                                img = document.createElement('img');
-                                img.setAttribute("style", "margin-top:5px;height:100px;width:100%;display:inline-block");
-                                img.setAttribute("id", "previewImage");
-                                img.src = event.target.result;
-                                divElem.appendChild(img);
-                                alert(file.type);
-                                switch(file.type)
-                                {
-                                    case 'text/plain':
-                                    {
-                                        img.src = "img/fileIcons/txtFile.png";
-                                        break;
-                                    }
-                                    case 'application/pdf':
-                                    {
-                                        img.src = "img/fileIcons/pdfFile.png";
-                                        break;
-                                    }
-                                    case 'application/msword':
-                                    {
-                                        img.src = "img/fileIcons/docFile.png";
-                                        break;
-                                    }
-                                    case 'audio/mpeg3':
-                                    case 'audio/x-mpeg3':
-                                    case 'video/mpeg':
-                                    case 'video/x-mpeg':
-                                    case 'audio/mp3':
-                                    {
-                                        img.src = "img/fileIcons/mp3File.png";
-                                        break;
-                                    }
-                                    case 'application/zip':
-                                    {
-                                        img.src = "img/fileIcons/zipFile.png";
-                                        break;
-                                    }
-                                    case 'application/x-compress':
-                                    {
-                                        img.src = "img/fileIcons/7zipFile.png";
-                                        break;
-                                    }
-                                    default:
-                                    {
-                                        img.src = "img/fileIcons/file.png";
-                                        break;
-                                    }
-                                }
-                            } 
-                        }
-                    })();
-                </script>
             </div>
         </div>
         <input type="hidden" id="profileId" value=""/>

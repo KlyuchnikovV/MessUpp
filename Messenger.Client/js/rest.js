@@ -150,6 +150,7 @@ function GetChats()
 				var item = data[i];
 				var wrap = document.createElement("div");
 				var but = document.createElement("div");
+				var close = document.createElement("img");
 				var img = document.createElement("img");
 				but.innerHTML = item.ChatName;
 				wrap.setAttribute("class", "chatNodes");
@@ -157,6 +158,7 @@ function GetChats()
 				but.setAttribute("onclick", 'GetMessages("' + item.ChatId + '")');
 				but.setAttribute("style", "height=25px; width=calc(100% - 35px);" + 
 										"display:inline-block; margin-left:10px; margin-top:10px; position:absolute");
+
 				img.setAttribute("src", "./img/chatWithoutImage.png");
 				img.setAttribute("style", "display:inline-block");
 				img.setAttribute("height", "25px");
@@ -164,8 +166,19 @@ function GetChats()
 				img.setAttribute("vspace", "5px");
 				img.setAttribute("hspace", "5px");
 
+				close.setAttribute("src", "./img/close.png");
+				close.setAttribute("height", "25px");
+				close.setAttribute("width", "25px");
+				close.setAttribute("vspace", "5px");
+				close.setAttribute("hspace", "5px");
+				close.setAttribute("style", "position:absolute;margin-right: 5px;margin-left:110px");
+				close.setAttribute("onclick", "DeleteChat('" + item.ChatId + "')");
+				close.setAttribute("class", "divButton");
+
+				
 				wrap.appendChild(img);
 				wrap.appendChild(but);
+				wrap.appendChild(close);
 				mainList.appendChild(wrap);
 			}
 			break;
@@ -185,7 +198,6 @@ function Login()
     var login = document.getElementById("txtLogin").value;
     var password = document.getElementById("txtPassword").value;
 	var request = new XMLHttpRequest();
-	// Может понадобиться сменить адрес, добавить аватар и асинхронность. //
 	request.open('POST', profileUrl + "/login", false);
 	var user = '{ "Login" : "' + login + '", "Password" : "' + password + '" }';
 	request.setRequestHeader("Content-type", "application/json");
@@ -198,7 +210,6 @@ function Login()
 		PopUp("Ошибка входа: нет подключения к серверу", 1, false);
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
@@ -238,12 +249,12 @@ function CreateChat()
 		PopUp("Ошибка создания чата: нет подключения к серверу", 1, false);
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
 		{
 			GetChats(id);
+			PopUp("Чат создан!", 0, true);
 			break;
 		}
 		default:
@@ -289,7 +300,7 @@ function GetChat(id)
 
 // Delete method. //
 // Отправляет запрос на удаление чата по ИД. //
-function DeleteProfile(id)
+function DeleteChat(id)
 {
 	var request = new XMLHttpRequest();
 	var url = chatUrl + "/" + id;
@@ -307,6 +318,7 @@ function DeleteProfile(id)
 	switch(request.status)
 	{
 		case 200:
+		case 204:
 		{
 			PopUp("Чат успешно удален.", 0, true);
 			GetChats();
@@ -342,7 +354,6 @@ function AddToChat(id)
 		PopUp("Ошибка добавления к чату: нет подключения к серверу", 1, false);			
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
@@ -360,11 +371,12 @@ function AddToChat(id)
 }
 
 // Delete method. //
-// Отправляет запрос на удаление чата по ИД. //
-function DeleteProfile(id)
+// Отправляет запрос на удаление пользователя чата по ИД. //
+function DeleteChatProfile()
 {
 	var request = new XMLHttpRequest();
 	var chatId = document.getElementById("chatId").value;
+	var id = document.getElementById("profileId").value;
 	var url = chatUrl + "/" + chatId + "/delete/profile/" + id;
 	request.open('DELETE', url, false);
 	try
@@ -380,9 +392,18 @@ function DeleteProfile(id)
 	switch(request.status)
 	{
 		case 200:
+		case 204:
 		{
 			PopUp("Профиль успешно удален из чата.", 0, true);
-			GetChats();//ChatProfiles();
+			document.getElementById("messageBox").setAttribute("style",
+			"visibility:hidden;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");
+			document.getElementById("dialogMeta").setAttribute("style",
+				"visibility:hidden; position:absolute;height:35px;width:100%;top:0;background-color:#C0C0C0;padding-left:15px;padding-top:0px;bottom:10px");
+			document.getElementById("dialogName").setAttribute("style",
+			"visibility:hidden; position:absolute;height:35px;width:100%;top:0;padding-left:15px;margin-top:0px;bottom:10px");
+			document.getElementById("dialog").setAttribute("style",
+				"visibility:hidden; text-align:left; margin-bottom:25px; padding:0; background:#202020; height:calc(100vh - 100px); width:(100% - 20px); position: absolute; top:35px; overflow-y:auto;");
+			GetChats();
 			return;
 		}
 		default:
@@ -399,7 +420,7 @@ function ChatProfiles()
 {
 	var id = document.getElementById('chatId').value;
 	var request = new XMLHttpRequest();
-	var url = chatUrl + "/" + id + ".get/profiles";
+	var url = chatUrl + "/" + id + "/get/profiles";
 	request.open('GET', url, false);
 	try
 	{
@@ -432,7 +453,7 @@ function ChatProfiles()
 				but.setAttribute("style", 
 					"height=25px; width:130px; display:inline-block; margin-left:0px; " + 
 					"margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
-				if(item.AttachId != '00000000-0000-0000-0000-000000000000')
+				if(item.Avatar != null)
 				{
 					var attachData = GetAttachData(item.Avatar);
 					img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
@@ -469,15 +490,26 @@ function SendMessage()
 	var profileId = document.getElementById('profileId').value;
 	var chatId = document.getElementById("chatId").value;
 	var messageText = document.getElementById("messageArea").value;
-	if(messageText == "")
+	var preview = document.getElementById("preview");
+	var attachId;
+	if(messageText == "" && preview.innerHTML == "")
 	{
 		PopUp("Ошибка отправки сообщения: " + "пустое сообщение.", 1, false);
 		return;
 	}
+	if(document.getElementById('file-input').files.length > 0)
+	{
+		attachId = LoadAttach();
+	}
+	else
+	{
+		attachId = 0;
+	}
+	//alert(attachId);
 	var request = new XMLHttpRequest();
 	request.open('POST', messageUrl, false);
 	var message = '{ "ProfileId" : "' + profileId + '", "ChatId" : "' + chatId +
-					'", "MessageText" : "' + messageText + '", "Attachment" : [' + 0 + '] } ';
+					'", "MessageText" : "' + messageText + '", "Attachment" : "' + attachId + '" } ';
 	request.setRequestHeader("Content-type", "application/json");
 	try
 	{
@@ -488,17 +520,18 @@ function SendMessage()
 		PopUp("Ошибка отправки сообщения: нет подключения к серверу", 1, false);			
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
 		{
 			responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			GetMessages(chatId);
 			document.getElementById("messageArea").value = "";
-			// Update dialog, clean message box, add attachments
-			// Image
+			preview.innerHTML = "";
+			document.getElementById('file-input').innerHTML = document.getElementById('file-input').innerHTML;
+			document.getElementById('messageBox').setAttribute("style",
+			"visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");   
+			GetMessages(chatId);
 			break;
 		}
 		default:
@@ -554,7 +587,6 @@ function GetMessages(chatId)
 		PopUp("Ошибка получения сообщения: нет подключения к серверу", 1, false);			
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
@@ -571,6 +603,7 @@ function GetMessages(chatId)
 				var inf = document.createElement("div");
 				var text = document.createElement("div");
 				var message = document.createElement("div");
+				var attach = document.createElement("img");
 				var profileId = document.getElementById("profileId").value;
 				var profile = GetProfile(item.ProfileId);
 				//array = item.MessageText.split(/\s*(\W|\D)+\s*/);
@@ -603,13 +636,23 @@ function GetMessages(chatId)
 				}
 				message.appendChild(inf);
 				message.appendChild(text);
+				//alert(item.Attachment);
+				if(item.Attachment != '00000000-0000-0000-0000-000000000000')
+				{
+					var attachData = GetAttachData(item.Attachment);
+					attach.setAttribute("src", 'data:image/png;base64,' + attachData.Data);
+					attach.setAttribute("height", "200px");
+					attach.setAttribute("width", "200px");
+					attach.setAttribute("vspace", "15px");
+					attach.setAttribute("hspace", "25px");
+					//alert(attachData.Type );
+					//attach.setAttribute("onclick", "Download('"  + attachData.Data + "','" + attachData.Type + "')");
+					message.appendChild(attach);
+				}
 				mainList.appendChild(message);
-
 				//var words = item.MessageText.split(" ");
 				//cache.value = cache.value + " " + words[0];
-
 			}
-
 			document.getElementById("messageBox").setAttribute("style",
 				"visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");
 			document.getElementById("dialogMeta").setAttribute("style",
@@ -620,15 +663,12 @@ function GetMessages(chatId)
 			"visibility:visible; position:absolute;height:35px;width:100%;top:0;padding-left:15px;margin-top:0px;bottom:10px");
 			document.getElementById("dialog").setAttribute("style",
 				"visibility:visible; text-align:left; margin-bottom:25px; padding:0; background:#202020; height:calc(100vh - 100px); width:(100% - 20px); position: absolute; top:35px; overflow-y:auto;");
-
 			document.getElementById("dialog").scrollTop = document.getElementById("dialog").scrollHeight;
-
 			break;
 		}
 		default:
 		{
 			PopUp("Ошибка получения сообщений: " + request.status + ': ' + request.statusText, 1, false);			
-			
 			break;
 		}
 	}
@@ -642,9 +682,8 @@ function UpdateMessages()
 	var chatId = document.getElementById("chatId").value;
 	if(chatId == "")
 		return;
-	var url = messageUrl + "/chat/" + chatId + "count";
+	var url = messageUrl + "/chat/" + chatId + "/count";
 	request.open('GET', url, false);
-
 	try
 	{
 		request.send(null);
@@ -663,9 +702,9 @@ function UpdateMessages()
 			var data = JSON.parse(responseBody);
 			if(data != document.getElementById("count").value)
 			{
+				document.getElementById("count").value = data;
 				GetMessages(chatId);
 			}
-			document.getElementById("count").value = data;
 			break;
 		}
 		default:
@@ -744,7 +783,7 @@ function Find()
 				addImg.setAttribute("width", "25px");
 				addImg.setAttribute("vspace", "5px");
 				addImg.setAttribute("hspace", "5px");
-				if(item.AttachId != '00000000-0000-0000-0000-000000000000')
+				if(item.Avatar != null)
 				{
 					var attachData = GetAttachData(item.Avatar);
 					img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
@@ -900,7 +939,7 @@ function LoadAvatar()
 		CreateUser(0);
 	}
 	var request = new XMLHttpRequest();
-	var data = '{ "AttachId" : "0", "Data" : "' + getBase64Image(img) + '", "Type" : "' + document.getElementById("avatarFile").files[0].type + '" }';
+	var data = '{ "AttachId" : "0", "Data" : "' + getBase64Image(img, 150, 200) + '", "Type" : "' + document.getElementById("avatarFile").files[0].type + '" }';
 	request.open('POST', attachmentUrl, false);
 	request.setRequestHeader("Content-type", "application/json");
 	try
@@ -920,7 +959,6 @@ function LoadAvatar()
 			var responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
 			CreateUser(data.AttachId);
-			alert("Успешно.");
 			break;
 		}
 		default:
@@ -932,15 +970,12 @@ function LoadAvatar()
 	}
 }
 
+// Post method. //
 function LoadAttach()
 {
 	var img = document.getElementById("previewImage");
-	if(!img)
-	{
-		CreateUser(0);
-	}
 	var request = new XMLHttpRequest();
-	var data = '{ "AttachId" : "0", "Data" : "' + getBase64Image(img) + '", "Type" : "' + document.getElementById("avatarFile").files[0].type + '" }';
+	var data = '{ "AttachId" : "0", "Data" : "' + getBase64Image(img, 100, 100) + '", "Type" : "' + document.getElementById("file-input").files[0].type + '" }';
 	request.open('POST', attachmentUrl, false);
 	request.setRequestHeader("Content-type", "application/json");
 	try
@@ -949,8 +984,8 @@ function LoadAttach()
 	}
 	catch(Exception)
 	{
-		//PopUp("Ошибка отправки файла: нет подключения к серверу", 1, false);
-		alert("Ошибка отправки файла: нет подключения к серверу");
+		PopUp("Ошибка отправки файла: нет подключения к серверу", 1, false);
+		//alert("Ошибка отправки файла: нет подключения к серверу");
 		return;
 	}
 	switch(request.status)
@@ -959,14 +994,13 @@ function LoadAttach()
 		{
 			var responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			CreateUser(data.AttachId);
-			alert("Успешно.");
-			break;
+			PopUp("Вложение загружено.", 0, true);
+			return data.AttachId;
 		}
 		default:
 		{
-			//PopUp("Ошибка отправки файла: " + request.status + ': ' + request.statusText, 1, false);
-			alert("Ошибка отправки файла: " + request.status + ': ' + request.statusText);
+			PopUp("Ошибка отправки файла: " + request.status + ': ' + request.statusText, 1, false);
+			//alert("Ошибка отправки файла: " + request.status + ': ' + request.statusText);
 			break;
 		}
 	}
@@ -995,7 +1029,6 @@ function GetAttachData(id)
 		{
 			responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			//alert(data.Data[0] + data.Data[1] + data.Data[2]);
 			return data;
 		}
 		default:
@@ -1006,28 +1039,13 @@ function GetAttachData(id)
 	}
 }
 
-function getBase64Image(img)
+function getBase64Image(img, width, height)
 {
 	var canvas = document.createElement("canvas");
 	canvas.width = img.width;
 	canvas.height = img.height;
 	var ctx = canvas.getContext("2d");
-	ctx.drawImage(img, 0, 0, 150, 200);
+	ctx.drawImage(img, 0, 0, width, height);
 	var dataURL = canvas.toDataURL("image/png");
 	return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-  }
-
-  function saveImage(url) {
-    var img = document.createElement("img");
-    img.src = url;
-    img.onload = function() {
-        var key = encodeURIComponent(url),
-            canvas = document.createElement("canvas");
-
-        canvas.width = img.width;  
-        canvas.height = img.height;  
-        var ctx = canvas.getContext("2d");  
-        ctx.drawImage(img, 0, 0, 150, 200);
-        localStorage.setItem(key, canvas.toDataURL("image/png"));
-    }
 }

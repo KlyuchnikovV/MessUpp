@@ -6,7 +6,7 @@
             "name": "Launch Electron App",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/Client/js/main.js", // important
+            "program": "${workspaceFolder}/main.js", // important
             "stopOnEntry": false,
             "args": [],
             "cwd": "${workspaceFolder}",

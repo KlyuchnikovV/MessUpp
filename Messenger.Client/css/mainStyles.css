@@ -1,7 +1,7 @@
 .body
 {
     margin:0px;
-    /*overflow: hidden;*/
+    overflow: hidden;/**/
     background-color: #202020;
     /*background-color: #018813; */
     min-width:765px;
