@@ -4,20 +4,25 @@
 
     <head>
 
-        <title>Messenger App. Version 0.1.0</title>
-		<script type="text/javascript" src="js/rest.js"></script>
+        <title>Messenger App. Version 0.2.0</title>
+        <script type="text/javascript" src="js/rest.js"></script>
         <style>
-            .inputBox 
+            .inputBox
             {
                 margin-left: 10px
             }
-            .textbox 
+            .textbox
             {
                 border: 1px solid #434343;
                 -moz-border-radius: 10px;
                 -webkit-border-radius: 9px;
                 padding-left: 5px;
                 font-weight: bold;
+            }
+            img
+            {
+                max-width:100%;
+                margin:0 auto;
             }
         </style>
     </head>
@@ -30,7 +35,7 @@
 
             <div style="padding-right: 10px; padding-top: 5px; float:left ">
                 <!-- Create default picture for user -->
-                <img id="avatar" style="width:150px; height:200px"/>
+                <img id="avatar" style="max-height:200px; max-width:150px"/>
             </div>
 
             <div id="divName" class="inputBox">
@@ -38,7 +43,6 @@
                 <div align="left">
 					<input id="txtName" class="textbox" type="textbox"/>
                 </div>
-                
             </div>
 
             <div id="divSurname" class="inputBox">
@@ -64,14 +68,17 @@
                 <div style="padding-left: 150px">
                     <label>Аватар:<br/></label>
                     <input style="padding-top: 2px" id="avatarFile" type="file" accept=".jpg, .jpeg, .png" />
-                    
                 </div>
             </div>
 
             <div id="divButtons" style="padding-left: 160px">
                 <br/>
-                <input id="okButton" value="Создать" type="button" onclick="CreateUser(this)"/>
+                <input id="okButton" value="Создать" type="button" onclick="LoadAvatar();"/>
                 <input id="cancelButton" value="Отмена." type="button"  onclick="location.href = 'index.html';"/>
+            </div>
+            <div style="padding-right: 10px; padding-top: 5px; float:left;">
+                <!-- Create default picture for user -->
+                <canvas id="avatarLoaded"/>
             </div>
         </form>
 
@@ -85,23 +92,23 @@
                     continue;
                 if(element.addEventListener)
                 {
-                    element.addEventListener('textInput', TextBoxValidator, false);                      
-                }  
+                    element.addEventListener('textInput', TextBoxValidator, false);
+                }
 			}
 
             // Add checking instead of alerting. //
-            function TextBoxValidator(event) 
+            function TextBoxValidator(event)
             {
-                //alert("Gotcha!");    
+                //alert("Gotcha!");
 			}
 
-            document.getElementById('avatarFile').onchange = 
-            function (evt) 
+            document.getElementById('avatarFile').onchange =
+            function (evt)
             {
                 var tgt = evt.target || window.event.srcElement,
                     files = tgt.files;
 
-                if (FileReader && files && files.length) 
+                if (FileReader && files && files.length)
                 {
                     var fr = new FileReader();
                     fr.onload = function () {
@@ -114,8 +121,6 @@
                     alert("Не могу загрузить фотографию.");
                 }
             }
-
         </script>
     </body>
-
 </html>

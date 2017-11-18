@@ -5,234 +5,11 @@
         <script type="text/javascript" src="js/rest.js"></script>
         <script type="text/javascript" src="js/mainActions.js"></script>
         <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
-        <!-- JS file -->
-        <script src="../node_modules/easy-autocomplete/dist/jquery.easy-autocomplete.min.js"></script> 
-
-        <!-- CSS file -->
-        <link rel="stylesheet" href="../node_modules/easy-autocomplete/dist/easy-autocomplete.min.css"> 
-
-        <!-- Additional CSS Themes file - not required-->
-        <link rel="stylesheet" href="../node_modules/easy-autocomplete/dist/easy-autocomplete.themes.min.css">
-        <style>
-            .body
-            {
-                margin:0px;
-                /*overflow: hidden;*/
-                background-color: #202020;
-                /*background-color: #018813; */
-				min-width:765px;
-            }
-
-            .cmdPanel
-            {
-                border:0px solid #CD853F; 
-                width:35px; 
-                height:100vh; 
-                float:left; 
-                background-color: #404040;
-            }
-            .cmdPanel > div,
-            {
-                padding: 0px;
-                border: 0px solid #CD853F;
-                color: #C0C0C0;
-                height: 35px;
-                width: 35px
-            }
-            .cmdPanel > div:active,
-            .divButton:active,
-            .chatNodes:active
-            {
-                background-color: #C0C0C0;
-                box-shadow: 0 0 5px -2px rgba(0,0,0,0.6);
-            }
-            .cmdPanel > div > img:hover,
-            .icon:hover,
-            .chatNodes:hover,
-            .divButton:hover
-            {
-                -webkit-filter: invert(100%);
-                filter: invert(100%);
-            }
-            .chatNodes,
-            .personeNodes
-            {
-                background-color:#1C2139; 
-                color: #ffffff;
-                padding-left:5px; 
-                margin-top:5px;
-                height:35px; 
-                width: 90%;
-                margin-left:5%; 
-                margin-top:2%;
-                -moz-border-radius: 10px; 
-                -webkit-border-radius: 9px;
-                display: inline-block;
-            }
-
-            .dialogPanel
-            {
-                position: absolute;
-                left:35px;
-                top:0px;
-                border-top: 0px;
-                bottom:0;
-				min-width:765px;
-            }
-
-            /*общий блок*/
-            .slidePanelWrap 
-            {
-                width:200px;
-                position:relative; /*обязательное свойство*/
-                overflow:hidden; /*обязательное свойство*/
-            }
-            
-            /*элементы левой панели*/
-            .chatsPanel 
-            {
-                margin-left:-235px; /*обязательное свойство*/
-                padding:0px; 
-                width:200px; 
-                position:relative; /*обязательное свойство*/
-                top:0; /*обязательное свойство*/
-                left:0; /*обязательное свойство*/
-                background:#303030;
-                height: 100vh;
-            }
-
-            .createPanel,
-            .findPanel,
-            .settingsPanel,
-            .logoutPanel,
-            .peoplePanel
-            {
-                margin-left:-200px; /*обязательное свойство*/
-                padding:0px; 
-                width:200px; 
-                position: absolute; /*обязательное свойство*/
-                top:0; /*обязательное свойство*/
-                left:0; /*обязательное свойство*/
-                background:#303030;
-                height: 100vh;
-            }
-
-            .popUp,
-            {
-                margin-top:-50px; /*обязательное свойство*/
-                padding:0px; 
-                position:absolute; /*обязательное свойство*/
-                top:-50px; /*обязательное свойство*/
-                left:240vw; /*обязательное свойство*/
-            }
-
-            .messageBox,
-            .messageArea
-            {
-                position: absolute;
-                width: 100%;
-                vertical-align: bottom;
-                background:#303030;
-            }
-
-            .messageArea
-            {
-                background-color: #C0C0C0;
-                -moz-border-radius: 10px;
-                -webkit-border-radius: 9px;
-                position: absolute;
-                bottom: 2px;
-                padding-left: 5px;
-                padding-right: 5px;
-            }
-
-            .dialog
-            {
-                text-align:left;
-                margin-bottom:25px;
-                padding:0px;
-                background:#202020;
-                height:calc(100vh - 85px);
-                width:100%;
-                position: absolute;
-                top:35px;
-                border:0px solid #ACD8F0;
-                overflow-y: scroll;
-                visibility: hidden;
-                padding-right: 10px;
-                /*overflow:auto; */
-            }
-
-            .divButton > input
-            {
-                display: none;
-            }
-
-            .divButton img
-            {
-                cursor: pointer;
-            }
-    
-			.dialogMeta
-			{
-				position:absolute;
-				height:35px;
-                width:100%;
-				top:0;
-				background-color:#C0C0C0;
-                visibility: hidden;
-                font-size: 190%;
-                text-align: left;
-			}
-
-            .dialogMessage
-            {
-                background-color: #C0C0C0;
-                -moz-border-radius: 10px;
-                -webkit-border-radius: 9px;
-                margin-top:2%;
-                height:10%;
-                width: 50%; 
-                padding-left: 5px;
-                color: black;
-            }
-
-            ::-webkit-scrollbar-track
-            {
-                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-                border-radius: 10px;
-                background-color: #303030;
-            }
-
-            ::-webkit-scrollbar
-            {
-                width: 12px;
-                background-color: #808080;
-            }
-
-            ::-webkit-scrollbar-thumb
-            {
-                border-radius: 10px;
-                -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-                background-color: #808080;
-                margin-right: 10px;
-            }
-
-            .createChatArea
-            {
-                -moz-border-radius: 10px; 
-                -webkit-border-radius: 9px;
-                padding-left: 5px;
-            }
-
-            .easy-autocomplete
-            {
-                flex :1;
-            }
-
-        </style>
+        <!--<script type="text/javascript" src="../node_modules/easy-autocomplete/dist/jquery.easy-autocomplete.min.js"></script>-->
+        <link rel="stylesheet" href="./css/mainStyles.css">
     </head>
     <body onload="OnLoad()" class="body">
+        <!-- Панель с кнопками-->
         <div class="cmdPanel">
             <div class="divButtonChats" id="chats">
                 <img class="icon" src="./img/chats.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Чаты">
@@ -253,15 +30,15 @@
                 <img class="icon" src="./img/logout.png" height="25px" width="25px" vspace="5px" hspace="6px" title="Выход">
             </div>
         </div>
-        <!-- Selecting user to send message and to add to dialog, add searching, settings -->
-        <!-- Seacrh users(add button for add to chat) -->
-        <div class="slidePanelWrap">	
+        <!-- Сделать настройки -->
+        <!-- Боковые панели -->
+        <div class="slidePanelWrap">
             <div class="chatsPanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
-                    <label class="label"><br/><h1>Чаты:</h1></label>                        
+                    <label class="label"><br/><h1>Чаты:</h1></label>
                 </div>
                 <div id="chatList">
-                    <label class="label" style="color:#ffffff">Здесь пока нет ни одного чата:(</label> 
+                    <label class="label" style="color:#ffffff">Здесь пока нет ни одного чата:(</label>
                 </div>
             </div>
             <div class="createPanel" align="center">
@@ -284,9 +61,9 @@
                     <label class="label"><br/><h1>Поиск:</h1></label>
                 </div>
                 <input class="createChatArea" type="textbox" id="findString"><br/><br/>
-                <button class="createChatArea" onclick="Find()">Найти</button>   
+                <button class="createChatArea" onclick="Find()">Найти</button>
                 <div id="searchResults">
-                </div>             
+                </div>
             </div>
             <div class="settingsPanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
@@ -309,17 +86,19 @@
                     <label style="color:#ffffff">Чат не выбран</label>
                 </div>
             </div>
-            <input type="hidden" id="chatsHidden" value="false"/>            
-            <input type="hidden" id="findHidden" value="false"/>            
-            <input type="hidden" id="createHidden" value="false"/>            
+            <input type="hidden" id="chatsHidden" value="false"/>
+            <input type="hidden" id="findHidden" value="false"/>
+            <input type="hidden" id="createHidden" value="false"/>
             <input type="hidden" id="logoutHidden" value="false"/>
             <input type="hidden" id="peopleHidden" value="false"/>
             <input type="hidden" id="settingsHidden" value="false"/>
-        </div>	
+        </div>
+        <!-- Панель всплывающих сообщений -->
         <div class="popUp" id="popUp" style="z-index:99;visibility:hidden; height:40px; width:50vw; position:absolute; left:25vw; top:20px">
             <label id="popUpMessage"></label>
         </div>
-        <!-- Show attachs in dialog window -->
+        <!-- Сделать отображение файлов -->
+        <!-- Панель чата -->
         <div class="dialogPanel">
 			<div class="dialogMeta" id="dialogMeta">
                 <img src="./img/chatWithoutImage.png" height="25px" width="25px" vspace="5px" hspace="5px" style="display:inline-block"/>
@@ -328,51 +107,112 @@
 
             <div id="dialog" class="dialog">
             </div>
-    
-            <div class="messageBox" style="background-color:#202020;visibility:hidden;width:100%; height:39px; position:absolute; bottom:3px; left: 0px; min-width:765px" id="messageBox">
-                <div id="preview" style="position:absolute;left:35px;height:100px;width:100px;">
-                    </div>                    
+            <div class="messageBox" style="background-color:#202020; /*visibility:hidden;*/ width:100%; height:39px; position:absolute; bottom:3px; left: 0px; min-width:765px" id="messageBox">
+                <div id="preview" style="position:absolute;left:35px;height:110px;width:100px;resize:none;top:5px; bottom:5px;display:inline-block">
+                </div>
                 <div class="divButton" id="attachButton" style="background-color:#202020;width:35px; display:inline-block;position:absolute;bottom:5px;">
                     <label for="file-input">
-                        <img class="icon" src="./img/attach.png" height="25px" width="25px" vspace="5px" hspace="4px" title="Прикрепить файл"/>                            
-                    </label>    
+                        <img class="icon" src="./img/attach.png" height="25px" width="25px" vspace="5px" hspace="4px" title="Прикрепить файл"/>
+                    </label>
                     <input id="file-input" type="file" style="width:25px; height:25px"/>
-                </div>             
+                </div>
                 <textarea class="messageArea" style="position:absolute;left:35px;resize:none;bottom:0;overflow:hidden; overflow-y: scroll; min-width:600px;height:39px; width:calc(100% - 95px)" id="messageArea"></textarea>
                 <div class="divButton" id="sendButton" style="background-color:#202020;width:35px;display:inline-block; position:absolute; left:calc(100% - 40px);bottom:3px;" onclick="SendMessage();">
                     <img class="icon" src="./img/send.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Отправить"/>
                 </div>
                 <script>
-                    (function() 
+                    (function()
                     {
                         var inpElem = document.getElementById('file-input'),
                             divElem = document.getElementById('preview');
+                        
                         inpElem.addEventListener("change", function(e) {
                             preview(this.files[0]);
                         });
-                        function preview(file) {
-                        if ( file.type.match(/image.*/) ) {
-                            document.getElementById('messageBox').setAttribute("style", 
-                            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:139px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
-
-                            var reader = new FileReader(), img;
-                            reader.addEventListener("load", 
-                            function(event) 
+                        function preview(file) 
+                        {
+                            divElem.innerHTML = "";
+                            inpElem.innerHTML = inpElem.innerHTML;
+                            if ( file.type.match(/image.*/) ) 
                             {
+                                document.getElementById('messageBox').setAttribute("style",
+                                "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+
+                                var reader = new FileReader(), img;
+                                reader.addEventListener("load",
+                                function(event)
+                                {
+                                    img = document.createElement('img');
+                                    img.setAttribute("style", "top:5px;height:100px;width:100%;display:inline-block");
+                                    img.setAttribute("id", "previewImage");
+                                    img.src = event.target.result;
+                                    divElem.appendChild(img);
+                                });
+                                reader.readAsDataURL(file);
+                            }
+                            else
+                            {
+                                document.getElementById('messageBox').setAttribute("style",
+                                "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+
+                                var img;
                                 img = document.createElement('img');
+                                img.setAttribute("style", "margin-top:5px;height:100px;width:100%;display:inline-block");
+                                img.setAttribute("id", "previewImage");
                                 img.src = event.target.result;
                                 divElem.appendChild(img);
-                            });
-                            reader.readAsDataURL(file);
-                        }
+                                alert(file.type);
+                                switch(file.type)
+                                {
+                                    case 'text/plain':
+                                    {
+                                        img.src = "img/fileIcons/txtFile.png";
+                                        break;
+                                    }
+                                    case 'application/pdf':
+                                    {
+                                        img.src = "img/fileIcons/pdfFile.png";
+                                        break;
+                                    }
+                                    case 'application/msword':
+                                    {
+                                        img.src = "img/fileIcons/docFile.png";
+                                        break;
+                                    }
+                                    case 'audio/mpeg3':
+                                    case 'audio/x-mpeg3':
+                                    case 'video/mpeg':
+                                    case 'video/x-mpeg':
+                                    case 'audio/mp3':
+                                    {
+                                        img.src = "img/fileIcons/mp3File.png";
+                                        break;
+                                    }
+                                    case 'application/zip':
+                                    {
+                                        img.src = "img/fileIcons/zipFile.png";
+                                        break;
+                                    }
+                                    case 'application/x-compress':
+                                    {
+                                        img.src = "img/fileIcons/7zipFile.png";
+                                        break;
+                                    }
+                                    default:
+                                    {
+                                        img.src = "img/fileIcons/file.png";
+                                        break;
+                                    }
+                                }
+                            } 
                         }
                     })();
                 </script>
             </div>
-        </div>     
-        <input type="hidden" id="profileId" value=""/>   
-        <input type="hidden" id="chatId" value=""/>  
+        </div>
+        <input type="hidden" id="profileId" value=""/>
+        <input type="hidden" id="chatId" value=""/>
         <input type="hidden" id="cache" value="Привет$"/>
-        <input type="hidden" id="count" value="0"/>   
+        <input type="hidden" id="count" value="0"/>
     </body>
 </html>

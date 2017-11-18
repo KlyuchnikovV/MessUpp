@@ -15,9 +15,12 @@ namespace Messenger.Api.Controllers
     {
         private readonly IProfilesRepository profilesRepository;
         private readonly IMessagesRepository messagesRepository;
-        private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
+        private const string ConnectionString = @"Data Source = ACER;
                                                   Initial Catalog=MessengerDB; 
                                                   Integrated Security=TRUE; ";
+        /*private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
+                                                  Initial Catalog=MessengerDB; 
+                                                  Integrated Security=TRUE; ";*/
 
         public MessageController()
         {
@@ -27,7 +30,7 @@ namespace Messenger.Api.Controllers
 
         [HttpPost]
         [Route("api/message")]
-        public Message Create([FromBody] Message message)
+        public Message CreateMessage([FromBody] Message message)
         {
             try
             {
@@ -45,7 +48,7 @@ namespace Messenger.Api.Controllers
 
         [HttpGet]
         [Route("api/message/{id}")]
-        public Message Get(Guid id)
+        public Message GetMessage(Guid id)
         {
             try
             {
@@ -59,11 +62,11 @@ namespace Messenger.Api.Controllers
                 };
                 throw new HttpResponseException(response);
             }
-            catch(Exception)
+            catch(Exception exception)
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Conflict)
                 {
-                    Content = new StringContent("Сообщение не найдено")
+                    Content = new StringContent(exception.Message)
                 };
                 throw new HttpResponseException(response);
             }
@@ -71,7 +74,7 @@ namespace Messenger.Api.Controllers
 
         [HttpDelete]
         [Route("api/message/{id}")]
-        public void Delete(Guid id)
+        public void DeleteMessage(Guid id)
         {
             try
             { 
@@ -131,11 +134,11 @@ namespace Messenger.Api.Controllers
 
         [HttpPost]
         [Route("api/message/find/messages")]
-        public IEnumerable<Message> FindMessages([FromBody] FindArray names)
+        public IEnumerable<Message> FindMessages([FromBody] DataToFind data)
         {
             try
             { 
-                return messagesRepository.FindMessages(names.names, names.profileId);
+                return messagesRepository.FindMessages(data.tokens, data.profileId);
             }
             catch (SqlException exception)
             {

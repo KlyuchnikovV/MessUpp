@@ -1,16 +1,14 @@
 var $=require('jquery');
-function OnLoad() 
+
+// Заполняем поле ИД профиля и загружам чаты пользователя. //
+function OnLoad()
 {
     var paramValue = window.location.href.split("?")[1].split("=")[1];
     document.getElementById("profileId").value = paramValue;
     GetChats();
 }
 
-function OnRedirect(whereTo)
-{
-    document.location = whereTo + "?id=" + document.getElementById("profileId").value;
-}
-
+// Функция закрытия всех боковых панелей. //
 function ResetPanels(element)
 {
     if(document.getElementById("chatsHidden").value != "false" && element != document.getElementById("chatsHidden"))
@@ -45,7 +43,9 @@ function ResetPanels(element)
     }
 }
 
-$(document).ready(function(){	
+// Инициализация приложения. //
+$(document).ready(function(){
+    // Функция переключения состояния боковой панели чатов. //
     $("div.divButtonChats").click(
         function()
         {
@@ -76,6 +76,7 @@ $(document).ready(function(){
         }
     );
 
+    // Функция переключения состояния боковой панели создания чата. //
     $("div.divButtonCreate").click(
         function()
         {
@@ -106,6 +107,7 @@ $(document).ready(function(){
         }
     );
 
+    // Функция переключения состояния боковой панели поиска. //
     $("div.divButtonFind").click(
         function()
         {
@@ -136,6 +138,7 @@ $(document).ready(function(){
         }
     );
 
+    // Функция переключения состояния боковой панели настроек. //
     $("div.divButtonSettings").click(
         function()
         {
@@ -167,37 +170,7 @@ $(document).ready(function(){
         }
     );
 
-    $("div.divButtonLogout").click(
-        function()
-        {
-            ResetPanels(document.getElementById("logoutHidden"));
-
-            if(document.getElementById("logoutHidden").value == "false")
-            {
-                document.getElementById("logoutHidden").value = "true";
-                $("div.logoutPanel").animate({left:'200px'},500);
-                $('div.dialogPanel').css(
-                    {
-                        'width' : 'calc(100vw - 236px)',
-
-                    }
-                );
-                $("div.dialogPanel").animate({left:'235px'},500);
-            }
-            else
-            {
-                $("div.logoutPanel").animate({left:0},500);
-                $("div.dialogPanel").animate({left:35},500);
-                $('div.dialogPanel').css(
-                    {
-                        'width' : 'calc(100vw - 36px)',
-                    }
-                );
-                document.getElementById("logoutHidden").value = "false";
-            }
-        }
-    );
-
+    // Функция переключения состояния боковой панели пользователей чата. //
     $("div.divButtonPeople").click(
         function()
         {
@@ -229,12 +202,44 @@ $(document).ready(function(){
         }
     );
 
+    // Функция переключения состояния боковой панели выхода. //
+    $("div.divButtonLogout").click(
+        function()
+        {
+            ResetPanels(document.getElementById("logoutHidden"));
+
+            if(document.getElementById("logoutHidden").value == "false")
+            {
+                document.getElementById("logoutHidden").value = "true";
+                $("div.logoutPanel").animate({left:'200px'},500);
+                $('div.dialogPanel').css(
+                    {
+                        'width' : 'calc(100vw - 236px)',
+
+                    }
+                );
+                $("div.dialogPanel").animate({left:'235px'},500);
+            }
+            else
+            {
+                $("div.logoutPanel").animate({left:0},500);
+                $("div.dialogPanel").animate({left:35},500);
+                $('div.dialogPanel').css(
+                    {
+                        'width' : 'calc(100vw - 36px)',
+                    }
+                );
+                document.getElementById("logoutHidden").value = "false";
+            }
+        }
+    );
+
+    // Выводим сообщение о приветствии .//
     var id = document.getElementById("profileId").value;
     var profile = GetProfile(id);
-    //PopUp("Добро пожаловать, Admin!", 0, true);
     PopUp("Добро пожаловать, " + profile.Surname + " " + profile.Name + "!", 0, true);
 
-
+    // Устанавливаем интервал обновления сообщений. //
     setInterval(
         function()
         {
@@ -242,35 +247,122 @@ $(document).ready(function(){
         }
     , 1000);
 
-    var options = {
-        data: ["blue", "green", "pink", "red", "yellow"]
-    };
+    // Инициализируем превью файлов. //
+    var inpElem = document.getElementById('file-input'),
+        divElem = document.getElementById('preview');
     
-    $("#txtChatName").easyAutocomplete(options);
-    $("#findString").easyAutocomplete(options);
-    $("#messageArea").easyAutocomplete(options);
+    inpElem.addEventListener("change", function(e) {
+        preview(this.files[0]);
+    });
+    function preview(file) 
+    {
+        divElem.innerHTML = "";
+        inpElem.innerHTML = inpElem.innerHTML;
+        if ( file.type.match(/image.*/) ) 
+        {
+            document.getElementById('messageBox').setAttribute("style",
+            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+
+            var reader = new FileReader(), img;
+            reader.addEventListener("load",
+            function(event)
+            {
+                img = document.createElement('img');
+                img.setAttribute("style", "top:5px;height:100px;width:100%;display:inline-block");
+                img.setAttribute("id", "previewImage");
+                img.src = event.target.result;
+                divElem.appendChild(img);
+            });
+            reader.readAsDataURL(file);
+        }
+        else
+        {
+            document.getElementById('messageBox').setAttribute("style",
+            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+
+            var img;
+            img = document.createElement('img');
+            img.setAttribute("style", "margin-top:5px;height:100px;width:100%;display:inline-block");
+            img.setAttribute("id", "previewImage");
+            img.src = event.target.result;
+            divElem.appendChild(img);
+            switch(file.type)
+            {
+                case 'text/plain':
+                {
+                    img.src = "img/fileIcons/txtFile.png";
+                    break;
+                }
+                case 'application/pdf':
+                {
+                    img.src = "img/fileIcons/pdfFile.png";
+                    break;
+                }
+                case 'application/msword':
+                {
+                    img.src = "img/fileIcons/docFile.png";
+                    break;
+                }
+                case 'audio/mpeg3':
+                case 'audio/x-mpeg3':
+                case 'video/mpeg':
+                case 'video/x-mpeg':
+                case 'audio/mp3':
+                {
+                    img.src = "img/fileIcons/mp3File.png";
+                    break;
+                }
+                case 'application/zip':
+                {
+                    img.src = "img/fileIcons/zipFile.png";
+                    break;
+                }
+                case 'application/x-compress':
+                {
+                    img.src = "img/fileIcons/7zipFile.png";
+                    break;
+                }
+                default:
+                {
+                    img.src = "img/fileIcons/file.png";
+                    break;
+                }
+            }
+        } 
+    }
+
+    // Инициализируем автозаполнение. //
+    //var options = {
+    //    data: ["blue", "green", "pink", "red", "yellow"]
+    //};
     
+    //$("#txtChatName").easyAutocomplete(options);
+    //$("#findString").easyAutocomplete(options);
+    //$("#messageArea").easyAutocomplete(options);
 });	
 
+// Функция показа всплывающих сообщений. //
 function PopUp(message, type, isAutoClose)
 {
     var popUp = document.getElementById("popUp");
     var popUpMessage = document.getElementById("popUpMessage");
-    
-
     popUpMessage.innerHTML = message;
     switch(type)
     {
         case 0:
         {
             popUp.setAttribute("style", 
-                "background:#808080;z-index:99;visibility:visible;color:#018813; height:40px; width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px;-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
+                "background:#808080;z-index:99;visibility:visible;color:#018813; height:40px; " + 
+                "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " + 
+                "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
             break;
         }
         case 1:
         {
             popUp.setAttribute("style", 
-                "background:#808080;z-index:99;visibility:visible;color:#a30101; height:40px; width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px;-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
+                "background:#808080;z-index:99;visibility:visible;color:#a30101; height:40px; " + 
+                "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " + 
+                "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
             break;
         }
     }
@@ -299,10 +391,10 @@ function PopUp(message, type, isAutoClose)
     }
 }
 
+// Функция закрытия всплывающего сообщения. //
 function ClosePopUp()
 {
     $("div.popUp").animate({top:'-60px'},500);
 }
 
 
-  

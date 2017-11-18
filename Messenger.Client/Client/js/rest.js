@@ -1,66 +1,74 @@
+const fs = require('fs');
+
+// Пути к контроллерам
 var profileUrl = "http://localhost:49856/api/profile";
 var chatUrl = "http://localhost:49856/api/chat";
 var messageUrl = "http://localhost:49856/api/message";
+var attachmentUrl = "http://localhost:49856/api/attach";
+
+/// Profile methods. ///
 
 // Post method. //
-function CreateUser(object)
+//  Отправляет запрос на создание нового профиля. //
+function CreateUser(id)
 {
 	var name = document.getElementById("txtName").value;
 	var surname = document.getElementById("txtSurname").value;
 	var login = document.getElementById("txtLogin").value;
 	var password = document.getElementById("txtPassword").value;
-	//var avatar = getBase64Image(document.getElementById("avatarFile"));
-
 	var request = new XMLHttpRequest();
-
-	// Может понадобиться сменить адрес, добавить аватар и асинхронность. //
-
 	request.open('POST', profileUrl, false);
-	var user = '{ "Login" : "' + login + '", "Password" : "' + password + '", "Name" : "' + name + '", "Surname" : "' + surname + '", "Avatar" : [' + 0 + '] }';
+	var user =
+		'{ "Login" : "' + login + '", "Password" : "' + password + '", "Name" : "' +
+			name + '", "Surname" : "' + surname + '", "Avatar" : "' + id + '" }';
+
 	request.setRequestHeader("Content-type", "application/json");
+
 	try
 	{
 		request.send(user);
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка осоздания профиля: нет подключения к серверу", 1, false);				
+		PopUp("Ошибка осоздания профиля: нет подключения к серверу", 1, false);
 		return;
 	}
 
-	if (request.status != 200)
+	switch(request.status)
 	{
-		PopUp("Ошибка создания юзера: " + request.status + ': ' + request.statusText, 1, false);
-	}
-	else
-	{
-		responseBody = request.responseText;
-		var data = JSON.parse(responseBody);
-		console.log(data);
+		case 200:
+		{
+			//PopUp("Профиль успешно создан!", 0, true);
+			alert("Профиль успешно создан!");
+			window.location = "index.html";
+			break;
+		}
+		case 404:
+		case 409:
+		default:
+		{
+			//PopUp("Ошибка создания юзера: " + request.status + ': ' + request.statusText, 1, false);
+			alert("Ошибка создания юзера: " + request.status + ': ' + request.statusText);
+		}
 	}
 }
 
-// Post method. //
-function Login()
+// Get method. //
+// Отправляет запрос на полуение пользователя по ИД. //
+function GetProfile(id)
 {
-    var login = document.getElementById("txtLogin").value;
-    var password = document.getElementById("txtPassword").value;
 	var request = new XMLHttpRequest();
-	
-	// Может понадобиться сменить адрес, добавить аватар и асинхронность. //
-	request.open('POST', profileUrl + "/login", false);
-	var user = '{ "Login" : "' + login + '", "Password" : "' + password + '" }';
-	request.setRequestHeader("Content-type", "application/json");
+	var url = profileUrl + "/" + id;
+	request.open('GET', url, false);
 	try
 	{
-		request.send(user);
+		request.send(null);
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка входа: нет подключения к серверу", 1, false);			
+		PopUp("Ошибка получения профиля: нет подключения к серверу", 1, false);
 		return;
 	}
-
 
 	switch(request.status)
 	{
@@ -68,20 +76,51 @@ function Login()
 		{
 			responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			console.log(data);
-			window.location = "main.html?id=" + data.Id;
-			document.getElemehintById("profileId").value = data.Id;
-			break;
+			return data;
 		}
 		default:
 		{
-			PopUp("Ошибка входа: " + request.status + ': ' + request.statusText, 1, false);			
+			PopUp("Ошибка получения юзера: " + request.status + ': ' + request.statusText, 1, false);
+			break;
+		}
+	}
+}
+
+// Delete method. //
+// Отправляет запрос на удаление профиля по ИД. //
+function DeleteProfile(id)
+{
+	var request = new XMLHttpRequest();
+	var url = profileUrl + "/" + id;
+	request.open('DELETE', url, false);
+	try
+	{
+		request.send(null);
+	}
+	catch(Exception)
+	{
+		PopUp("Ошибка удаления профиля: нет подключения к серверу", 1, false);			
+		return;
+	}
+
+	switch(request.status)
+	{
+		case 200:
+		{
+			PopUp("Профиль успешно удален.", 0, true);
+			window.location = "index.html";
+			return;
+		}
+		default:
+		{
+			PopUp("Ошибка удаления профиля: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
 }
 
 // Get method. //
+// Отправляет запрос на получение чатов пользователя. //
 function GetChats()
 {
 	var id = document.getElementById('profileId').value;
@@ -116,10 +155,8 @@ function GetChats()
 				wrap.setAttribute("class", "chatNodes");
 				wrap.setAttribute("align", "left");
 				but.setAttribute("onclick", 'GetMessages("' + item.ChatId + '")');
-				but.setAttribute("style", "height=25px; width=calc(100% - 35px);display:inline-block; margin-left:10px; margin-top:10px; position:absolute");
-				
-				// If no pic then use default
-
+				but.setAttribute("style", "height=25px; width=calc(100% - 35px);" + 
+										"display:inline-block; margin-left:10px; margin-top:10px; position:absolute");
 				img.setAttribute("src", "./img/chatWithoutImage.png");
 				img.setAttribute("style", "display:inline-block");
 				img.setAttribute("height", "25px");
@@ -141,11 +178,88 @@ function GetChats()
 	}
 }
 
+// Post method. //
+// Отправляет запрос на поиск юзера по логину и паролю. //
+function Login()
+{
+    var login = document.getElementById("txtLogin").value;
+    var password = document.getElementById("txtPassword").value;
+	var request = new XMLHttpRequest();
+	// Может понадобиться сменить адрес, добавить аватар и асинхронность. //
+	request.open('POST', profileUrl + "/login", false);
+	var user = '{ "Login" : "' + login + '", "Password" : "' + password + '" }';
+	request.setRequestHeader("Content-type", "application/json");
+	try
+	{
+		request.send(user);
+	}
+	catch(Exception)
+	{
+		PopUp("Ошибка входа: нет подключения к серверу", 1, false);
+		return;
+	}
+
+	switch(request.status)
+	{
+		case 200:
+		{
+			responseBody = request.responseText;
+			var data = JSON.parse(responseBody);
+			window.location = "main.html?id=" + data.Id;
+			document.getElemehintById("profileId").value = data.Id;
+			break;
+		}
+		default:
+		{
+			PopUp("Ошибка входа: " + request.status + ': ' + request.statusText, 1, false);
+			break;
+		}
+	}
+}
+
+/// Chat methods. ///
+
+// Post method. //
+// Отправляет запрос на создание чата. //
+function CreateChat()
+{
+	var id = document.getElementById('profileId').value;
+	var chatName = document.getElementById("txtChatName").value;
+	var request = new XMLHttpRequest();
+	request.open('POST', chatUrl, false);
+	var chat = '{ "ChatName" : "' + chatName + '", "ChatMembers" : [ { "Id" : "' + id + '" } ] }';
+	request.setRequestHeader("Content-type", "application/json");
+	try
+	{
+		request.send(chat);
+	}
+	catch(Exception)
+	{
+		PopUp("Ошибка создания чата: нет подключения к серверу", 1, false);
+		return;
+	}
+
+	switch(request.status)
+	{
+		case 200:
+		{
+			GetChats(id);
+			break;
+		}
+		default:
+		{
+			PopUp("Ошибка создания чата: " + request.status + ': ' + request.statusText, 1, false);
+			break;
+		}
+	}
+}
+
 // Get method. //
-function GetProfile(id)
+// Отправляет запрос на получение чата по ИД. //
+function GetChat(id)
 {
 	var request = new XMLHttpRequest();
-	var url = profileUrl + "/" + id;
+	var url = chatUrl + "/" + id;
 	request.open('GET', url, false);
 	try
 	{
@@ -153,11 +267,9 @@ function GetProfile(id)
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка получения профиля: нет подключения к серверу", 1, false);			
-		
+		PopUp("Ошибка получения чата: нет подключения к серверу", 1, false);			
 		return;
 	}
-
 
 	switch(request.status)
 	{
@@ -169,31 +281,133 @@ function GetProfile(id)
 		}
 		default:
 		{
-			PopUp("Ошибка получения юзера: " + request.status + ': ' + request.statusText, 1, false);
-			
+			PopUp("Ошибка получения чата: " + request.status + ': ' + request.statusText, 1, false);			
 			break;
 		}
 	}
 }
 
-// Post method. //
-function CreateChat()
+// Delete method. //
+// Отправляет запрос на удаление чата по ИД. //
+function DeleteProfile(id)
 {
-	var id = document.getElementById('profileId').value;
-	var chatName = document.getElementById("txtChatName").value;
 	var request = new XMLHttpRequest();
-	request.open('POST', chatUrl, false);
-	var chat = '{ "ChatName" : "' + chatName + '", "ChatMembers" : [ { "Id" : "' + id + '" } ] }';
-	request.setRequestHeader("Content-type", "application/json");
-	
+	var url = chatUrl + "/" + id;
+	request.open('DELETE', url, false);
 	try
 	{
-		request.send(chat);
+		request.send(null);
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка создания чата: нет подключения к серверу", 1, false);			
-		
+		PopUp("Ошибка удаления чата: нет подключения к серверу", 1, false);			
+		return;
+	}
+
+	switch(request.status)
+	{
+		case 200:
+		{
+			PopUp("Чат успешно удален.", 0, true);
+			GetChats();
+			return;
+		}
+		default:
+		{
+			PopUp("Ошибка удаления чата: " + request.status + ': ' + request.statusText, 1, false);
+			break;
+		}
+	}
+}
+
+// Get method. //
+// Отправляет запрос на добавление выбранного пользователя к текущему чату. //
+function AddToChat(id)
+{
+	var request = new XMLHttpRequest();
+	var chatId = document.getElementById("chatId").value;
+	if(chatId == "")
+	{
+		PopUp("Ошибка добавления к чату: не выбран чат", 1, false);			
+		return;
+	}
+	var url = chatUrl + "/" + chatId + "/add/profile/" + id;
+	request.open('GET', url, false);
+	try
+	{
+		request.send(null);
+	}
+	catch(Exception)
+	{
+		PopUp("Ошибка добавления к чату: нет подключения к серверу", 1, false);			
+		return;
+	}
+
+	switch(request.status)
+	{
+		case 200:
+		case 204:
+		{
+			PopUp("Успешно!", 0, true);
+			break;
+		}
+		default:
+		{
+			PopUp("Ошибка добавления: " + request.status + ': ' + request.statusText, 1, false);			
+			break;
+		}
+	}
+}
+
+// Delete method. //
+// Отправляет запрос на удаление чата по ИД. //
+function DeleteProfile(id)
+{
+	var request = new XMLHttpRequest();
+	var chatId = document.getElementById("chatId").value;
+	var url = chatUrl + "/" + chatId + "/delete/profile/" + id;
+	request.open('DELETE', url, false);
+	try
+	{
+		request.send(null);
+	}
+	catch(Exception)
+	{
+		PopUp("Ошибка удаления профиля из чата: нет подключения к серверу", 1, false);			
+		return;
+	}
+
+	switch(request.status)
+	{
+		case 200:
+		{
+			PopUp("Профиль успешно удален из чата.", 0, true);
+			GetChats();//ChatProfiles();
+			return;
+		}
+		default:
+		{
+			PopUp("Ошибка удаления профиля из чата: " + request.status + ': ' + request.statusText, 1, false);
+			break;
+		}
+	}
+}
+
+// Get method. //
+// Отправлет запрос на получение профилей состоящих в текущем чате. //
+function ChatProfiles()
+{
+	var id = document.getElementById('chatId').value;
+	var request = new XMLHttpRequest();
+	var url = chatUrl + "/" + id + ".get/profiles";
+	request.open('GET', url, false);
+	try
+	{
+		request.send(null);
+	}
+	catch(Exception)
+	{
+		PopUp("Ошибка получения пользователей: нет подключения к серверу", 1, false);
 		return;
 	}
 
@@ -203,19 +417,53 @@ function CreateChat()
 		{
 			responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			GetChats(id);
+			var mainList = document.getElementById("chatProfiles");
+			mainList.innerHTML = "";
+			for(var i = 0; i < data.length; i++)
+			{
+				var item = data[i];
+				var wrap = document.createElement("div");
+				var but = document.createElement("div");
+				var img = document.createElement("img");
+				but.innerHTML = item.Name + " " + item.Surname;
+				wrap.setAttribute("class", "personeNodes");
+				wrap.setAttribute("align", "left");
+				but.setAttribute("onclick", 'Response("' + item.Id + '")');
+				but.setAttribute("style", 
+					"height=25px; width:130px; display:inline-block; margin-left:0px; " + 
+					"margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
+				if(item.AttachId != '00000000-0000-0000-0000-000000000000')
+				{
+					var attachData = GetAttachData(item.Avatar);
+					img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
+				}
+				else
+				{
+					img.setAttribute("src", "./img/personWithoutImage.png");
+				}
+				img.setAttribute("style", "display:inline-block");
+				img.setAttribute("height", "25px");
+				img.setAttribute("width", "25px");
+				img.setAttribute("vspace", "5px");
+				img.setAttribute("hspace", "5px");
+				wrap.appendChild(img);
+				wrap.appendChild(but);
+				mainList.appendChild(wrap);
+			}
 			break;
 		}
 		default:
 		{
-			PopUp("Ошибка создания чата: " + request.status + ': ' + request.statusText, 1, false);			
-			
+			PopUp("Ошибка получения чатов: " + request.status + ': ' + request.statusText, 1, false);			
 			break;
 		}
 	}
 }
 
+/// Message methods. ///
+
 // Post method. //
+// Отправляет запрос на создание сообщения. //
 function SendMessage()
 {
 	var profileId = document.getElementById('profileId').value;
@@ -223,13 +471,13 @@ function SendMessage()
 	var messageText = document.getElementById("messageArea").value;
 	if(messageText == "")
 	{
-		PopUp("Ошибка отправки сообщения: " + "пустое сообщение.", 1, false);		
+		PopUp("Ошибка отправки сообщения: " + "пустое сообщение.", 1, false);
 		return;
 	}
 	var request = new XMLHttpRequest();
 	request.open('POST', messageUrl, false);
-
-	var message = '{ "ProfileId" : "' + profileId + '", "ChatId" : "' + chatId + '", "MessageText" : "' + messageText + '", "Attachment" : [' + 0 + '] } ';
+	var message = '{ "ProfileId" : "' + profileId + '", "ChatId" : "' + chatId +
+					'", "MessageText" : "' + messageText + '", "Attachment" : [' + 0 + '] } ';
 	request.setRequestHeader("Content-type", "application/json");
 	try
 	{
@@ -238,7 +486,6 @@ function SendMessage()
 	catch(Exception)
 	{
 		PopUp("Ошибка отправки сообщения: нет подключения к серверу", 1, false);			
-		
 		return;
 	}
 
@@ -251,18 +498,19 @@ function SendMessage()
 			GetMessages(chatId);
 			document.getElementById("messageArea").value = "";
 			// Update dialog, clean message box, add attachments
+			// Image
 			break;
 		}
 		default:
 		{
 			PopUp("Ошибка отправки: " + request.status + ': ' + request.statusText, 1, false);			
-			
 			break;
 		}
 	}
 }
 
 // Get method. //
+// Отправляет запрос на получение всех сообщений чата. //
 function GetMessages(chatId)
 {
 	/*var Textcomplete = require('../../node_modules/textcomplete/lib/textcomplete');
@@ -325,13 +573,12 @@ function GetMessages(chatId)
 				var message = document.createElement("div");
 				var profileId = document.getElementById("profileId").value;
 				var profile = GetProfile(item.ProfileId);
-				array = item.MessageText.split(/\s*(\W|\D)+\s*/);
-				//alert(array);
-				for(var j = 0; j < array.length; j++)
-				{
-					if(array[j] != "")
-						cache.value += array[j] + "$";
-				}
+				//array = item.MessageText.split(/\s*(\W|\D)+\s*/);
+				//for(var j = 0; j < array.length; j++)
+				//{
+				//	if(array[j] != "")
+				//		cache.value += array[j] + "$";
+				//}
 				inf.innerHTML = profile.Name + " " + profile.Surname;
 				text.innerHTML = item.MessageText;
 				text.setAttribute("class", "dialogMessage");
@@ -358,8 +605,8 @@ function GetMessages(chatId)
 				message.appendChild(text);
 				mainList.appendChild(message);
 
-				var words = item.MessageText.split(" ");
-				cache.value = cache.value + " " + words[0];
+				//var words = item.MessageText.split(" ");
+				//cache.value = cache.value + " " + words[0];
 
 			}
 
@@ -388,41 +635,49 @@ function GetMessages(chatId)
 }
 
 // Get method. //
-function GetChat(id)
+// Отправляет запрос на подсчет сообщений в текущем чате. //
+function UpdateMessages()
 {
 	var request = new XMLHttpRequest();
-	var url = chatUrl + "/" + id;
+	var chatId = document.getElementById("chatId").value;
+	if(chatId == "")
+		return;
+	var url = messageUrl + "/chat/" + chatId + "count";
 	request.open('GET', url, false);
+
 	try
 	{
 		request.send(null);
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка получения чата: нет подключения к серверу", 1, false);			
-		
+		PopUp("Ошибка подсчета: нет подключения к серверу", 1, false);
 		return;
 	}
-
 
 	switch(request.status)
 	{
 		case 200:
 		{
-			responseBody = request.responseText;
+			var responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			return data;
+			if(data != document.getElementById("count").value)
+			{
+				GetMessages(chatId);
+			}
+			document.getElementById("count").value = data;
+			break;
 		}
 		default:
 		{
-			PopUp("Ошибка получения чата: " + request.status + ': ' + request.statusText, 1, false);			
-			
+			PopUp("Ошибка подсчета: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
 }
 
 // Get method. //
+// Отправляет три запроса: на поиск среди профилей, среди чатов и среди сообщений. //
 function Find()
 {
 	var request = new XMLHttpRequest();
@@ -431,17 +686,16 @@ function Find()
 	results .innerHTML = "";
 	var reg = /\s*,\s*/;
 	var array = string.split(reg);
-	var url = profileUrl + "find/profiles";
+	var url = profileUrl + "/find/profiles";
 	if(array.length < 1)
 	{
-		PopUp("Ошибка поиска: пустой запрос", 1, false);			
+		PopUp("Ошибка поиска: пустой запрос", 1, false);
 		return;
 	}
-	var names = '{ "names" : [ "' + array[0] + '"';
+	var names = '{ "tokens" : [ "' + array[0] + '"';
 	for(var i = 1; i < array.length; i++)
 		names += ', "' + array[i] + '" ';
 	names += ' ], "profileId" : "' + document.getElementById("profileId").value + '" }';
-	
 	request.open('POST', url, false);
 	request.setRequestHeader("Content-type", "application/json");
 	try
@@ -450,7 +704,7 @@ function Find()
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка поиска по пользователям: нет подключения к серверу", 1, false);			
+		PopUp("Ошибка поиска по пользователям: нет подключения к серверу", 1, false);
 		return;
 	}
 
@@ -474,8 +728,9 @@ function Find()
 				wrap.setAttribute("align", "left");
 				wrap.setAttribute("title", item.Name + " " + item.Surname);
 				but.setAttribute("onclick", 'AddToChat("' + item.Id + '")');
-				but.setAttribute("style", 
-					"height=25px; width:110px; display:inline-block; margin-left:30px; margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
+				but.setAttribute("style",
+					"height=25px; width:110px; display:inline-block; margin-left:30px; " +
+					"margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
 
 				button.setAttribute("style", "height=25px; width=25px;right:10px;position:absolute; float:right; background-color:#808080");
 				addImg.src = "./img/addperson.png";
@@ -489,9 +744,15 @@ function Find()
 				addImg.setAttribute("width", "25px");
 				addImg.setAttribute("vspace", "5px");
 				addImg.setAttribute("hspace", "5px");
-
-				// Add pictures
-				img.setAttribute("src", "./img/personWithoutImage.png");
+				if(item.AttachId != '00000000-0000-0000-0000-000000000000')
+				{
+					var attachData = GetAttachData(item.Avatar);
+					img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
+				}
+				else
+				{
+					img.setAttribute("src", "./img/personWithoutImage.png");
+				}
 
 				wrap.appendChild(img);
 				wrap.appendChild(but);
@@ -503,14 +764,12 @@ function Find()
 		}
 		default:
 		{
-			PopUp("Ошибка поиска: " + request.status + ': ' + request.statusText, 1, false);			
+			PopUp("Ошибка поиска по пользователям: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
 
-
-	url = chatUrl + "find/chats";
-
+	url = chatUrl + "/find/chats";
 	request.open('POST', url, false);
 	request.setRequestHeader("Content-type", "application/json");
 	try
@@ -519,10 +778,9 @@ function Find()
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка поиска по чатам: нет подключения к серверу", 1, false);			
+		PopUp("Ошибка поиска по чатам: нет подключения к серверу", 1, false);
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
@@ -541,8 +799,9 @@ function Find()
 				wrap.setAttribute("class", "chatNodes");
 				wrap.setAttribute("align", "left");
 				but.setAttribute("onclick", 'GetMessages("' + item.ChatId + '")');
-				but.setAttribute("style", 
-					"height=25px; width:110px; display:inline-block; margin-left:30px; margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
+				but.setAttribute("style",
+					"height=25px; width:110px; display:inline-block; margin-left:30px; margin-top:5px; " + 
+					"position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
 
 				button.setAttribute("style", "height=25px; width=25px;right:10px;position:absolute; float:right; background-color:#808080");
 				img.setAttribute("style", "display:inline-block;left:15px; position:absolute");
@@ -550,10 +809,7 @@ function Find()
 				img.setAttribute("width", "25px");
 				img.setAttribute("vspace", "5px");
 				img.setAttribute("hspace", "5px");
-
-				// Add pictures
 				img.setAttribute("src", "./img/chatWithoutImage.png");
-
 				wrap.appendChild(img);
 				wrap.appendChild(but);
 				wrap.appendChild(button);
@@ -563,13 +819,12 @@ function Find()
 		}
 		default:
 		{
-			PopUp("Ошибка поиска: " + request.status + ': ' + request.statusText, 1, false);			
+			PopUp("Ошибка поиска по чатам: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
 
-	url = messageUrl + "find/messages";
-	
+	url = messageUrl + "/find/messages";
 	request.open('POST', url, false);
 	request.setRequestHeader("Content-type", "application/json");
 	try
@@ -578,10 +833,9 @@ function Find()
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка поиска по чатам: нет подключения к серверу", 1, false);			
+		PopUp("Ошибка поиска по чатам: нет подключения к серверу", 1, false);
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
@@ -605,10 +859,12 @@ function Find()
 				wrap.setAttribute("align", "left");
 				wrap.setAttribute("title", item.MessageText + " от " + profile.Name + " " + profile.Surname + " из " + chat.ChatName + " отправлено от " + item.Date);
 				but.setAttribute("onclick", 'GetMessage("' + item.MessageId + '")');
-				but.setAttribute("style", 
-					"height=30px; width:110px; display:inline-block; margin-left:30px; margin-top:1px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
-				author.setAttribute("style", 
-					"height=30px; width:150px; display:inline-block; margin-left:15%; margin-top:17px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap; font-size:80%");
+				but.setAttribute("style",
+					"height=30px; width:110px; display:inline-block; margin-left:30px; margin-top:1px; " + 
+					"position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
+				author.setAttribute("style",
+					"height=30px; width:150px; display:inline-block; margin-left:15%; margin-top:17px; " + 
+					"position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap; font-size:80%");
 
 				button.setAttribute("style", "height=25px; width=25px;right:10px;position:absolute; float:right; background-color:#808080");
 				img.setAttribute("style", "display:inline-block;left:15px; position:absolute");
@@ -616,10 +872,7 @@ function Find()
 				img.setAttribute("width", "25px");
 				img.setAttribute("vspace", "5px");
 				img.setAttribute("hspace", "5px");
-
-				// Add pictures
 				img.setAttribute("src", "./img/message.png");
-
 				wrap.appendChild(img);
 				wrap.appendChild(but);
 				wrap.appendChild(author);
@@ -630,98 +883,101 @@ function Find()
 		}
 		default:
 		{
-			PopUp("Ошибка поиска: " + request.status + ': ' + request.statusText, 1, false);			
+			PopUp("Ошибка поиска по сообщениям: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
 }
 
-// Get method. //
-function AddToChat(id)
-{
-	var request = new XMLHttpRequest();
-	var chatId = document.getElementById("chatId").value;
-	if(chatId == "")
-	{
-		PopUp("Ошибка добавления к чату: не выбранн чат", 1, false);			
-		return;
-	}
-	var url = chatUrl + "/" + chatId + "/" + id;
-	request.open('GET', url, false);
+/// Attachment methods. ///
 
+// Post method. //
+function LoadAvatar()
+{
+	var img = document.getElementById("avatar");
+	if(!img)
+	{
+		CreateUser(0);
+	}
+	var request = new XMLHttpRequest();
+	var data = '{ "AttachId" : "0", "Data" : "' + getBase64Image(img) + '", "Type" : "' + document.getElementById("avatarFile").files[0].type + '" }';
+	request.open('POST', attachmentUrl, false);
+	request.setRequestHeader("Content-type", "application/json");
 	try
 	{
-		request.send(null);
+		request.send(data);
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка добавления к чату: нет подключения к серверу", 1, false);			
+		//PopUp("Ошибка отправки файла: нет подключения к серверу", 1, false);
+		alert("Ошибка отправки файла: нет подключения к серверу");
 		return;
 	}
-
-	switch(request.status)
-	{
-		case 200:
-		case 204:
-		{
-			PopUp("Успешно!", 0, true);
-			break;
-		}
-		default:
-		{
-			PopUp("Ошибка добавления: " + request.status + ': ' + request.statusText, 1, false);			
-			break;
-		}
-	}
-}
-
-// Get method. //
-function UpdateMessages()
-{
-	var request = new XMLHttpRequest();
-	var chatId = document.getElementById("chatId").value;
-	if(chatId == "")
-		return;
-	var url = messageUrl + "chat/" + chatId + "count";
-	request.open('GET', url, false);
-
-	try
-	{
-		request.send(null);
-	}
-	catch(Exception)
-	{
-		PopUp("Ошибка получения чата: нет подключения к серверу", 1, false);			
-		return;
-	}
-
 	switch(request.status)
 	{
 		case 200:
 		{
 			var responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			if(data != document.getElementById("count").value)
-			{
-				GetMessages(chatId);
-			}
-			document.getElementById("count").value = data;
+			CreateUser(data.AttachId);
+			alert("Успешно.");
 			break;
 		}
 		default:
 		{
-			PopUp("Ошибка подсчета: " + request.status + ': ' + request.statusText, 1, false);			
+			//PopUp("Ошибка отправки файла: " + request.status + ': ' + request.statusText, 1, false);
+			alert("Ошибка отправки файла: " + request.status + ': ' + request.statusText);
+			break;
+		}
+	}
+}
+
+function LoadAttach()
+{
+	var img = document.getElementById("previewImage");
+	if(!img)
+	{
+		CreateUser(0);
+	}
+	var request = new XMLHttpRequest();
+	var data = '{ "AttachId" : "0", "Data" : "' + getBase64Image(img) + '", "Type" : "' + document.getElementById("avatarFile").files[0].type + '" }';
+	request.open('POST', attachmentUrl, false);
+	request.setRequestHeader("Content-type", "application/json");
+	try
+	{
+		request.send(data);
+	}
+	catch(Exception)
+	{
+		//PopUp("Ошибка отправки файла: нет подключения к серверу", 1, false);
+		alert("Ошибка отправки файла: нет подключения к серверу");
+		return;
+	}
+	switch(request.status)
+	{
+		case 200:
+		{
+			var responseBody = request.responseText;
+			var data = JSON.parse(responseBody);
+			CreateUser(data.AttachId);
+			alert("Успешно.");
+			break;
+		}
+		default:
+		{
+			//PopUp("Ошибка отправки файла: " + request.status + ': ' + request.statusText, 1, false);
+			alert("Ошибка отправки файла: " + request.status + ': ' + request.statusText);
 			break;
 		}
 	}
 }
 
 // Get method. //
-function ChatProfiles()
+// Отправляет запрос на получение файла по его ИД. //
+function GetAttachData(id)
 {
-	var id = document.getElementById('chatId').value;
 	var request = new XMLHttpRequest();
-	var url = chatUrl + "/" + id + "/profiles";
+	var url = attachmentUrl + "/" + id;
 	request.open('GET', url, false);
 	try
 	{
@@ -729,7 +985,7 @@ function ChatProfiles()
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка получения пользователей: нет подключения к серверу", 1, false);			
+		PopUp("Ошибка получения вложения: нет подключения к серверу", 1, false);
 		return;
 	}
 
@@ -739,43 +995,39 @@ function ChatProfiles()
 		{
 			responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
-			var mainList = document.getElementById("chatProfiles");
-			mainList.innerHTML = "";
-			for(var i = 0; i < data.length; i++)
-			{
-				var item = data[i];
-				var wrap = document.createElement("div");
-				var but = document.createElement("div");
-				var img = document.createElement("img");
-				but.innerHTML = item.Name + " " + item.Surname;
-				wrap.setAttribute("class", "personeNodes");
-				wrap.setAttribute("align", "left");
-				but.setAttribute("onclick", 'Response("' + item.Id + '")');
-				but.setAttribute("style", 
-					"height=25px; width:130px; display:inline-block; margin-left:0px; margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
-				
-				// If no pic then use default
-
-
-				// Add pictures
-				img.setAttribute("src", "./img/personWithoutImage.png");
-
-				img.setAttribute("style", "display:inline-block");
-				img.setAttribute("height", "25px");
-				img.setAttribute("width", "25px");
-				img.setAttribute("vspace", "5px");
-				img.setAttribute("hspace", "5px");
-
-				wrap.appendChild(img);
-				wrap.appendChild(but);
-				mainList.appendChild(wrap);
-			}
-			break;
+			//alert(data.Data[0] + data.Data[1] + data.Data[2]);
+			return data;
 		}
 		default:
 		{
-			PopUp("Ошибка получения чатов: " + request.status + ': ' + request.statusText, 1, false);			
+			PopUp("Ошибка получения вложения: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
+}
+
+function getBase64Image(img)
+{
+	var canvas = document.createElement("canvas");
+	canvas.width = img.width;
+	canvas.height = img.height;
+	var ctx = canvas.getContext("2d");
+	ctx.drawImage(img, 0, 0, 150, 200);
+	var dataURL = canvas.toDataURL("image/png");
+	return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+  }
+
+  function saveImage(url) {
+    var img = document.createElement("img");
+    img.src = url;
+    img.onload = function() {
+        var key = encodeURIComponent(url),
+            canvas = document.createElement("canvas");
+
+        canvas.width = img.width;  
+        canvas.height = img.height;  
+        var ctx = canvas.getContext("2d");  
+        ctx.drawImage(img, 0, 0, 150, 200);
+        localStorage.setItem(key, canvas.toDataURL("image/png"));
+    }
 }

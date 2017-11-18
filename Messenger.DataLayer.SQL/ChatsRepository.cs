@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Data.SqlClient;
 using Messenger.Model;
 using NLog;
@@ -21,6 +19,7 @@ namespace Messenger.DataLayer.SQL
             profilesRepository = _profilesRepository;
         }
 
+        // Создание чата. //
         public Chat CreateChat(Chat chat)
         {
             logger.Debug("Создание чата...");
@@ -32,8 +31,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return null;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -50,12 +49,13 @@ namespace Messenger.DataLayer.SQL
                         {
                             command.ExecuteNonQuery();
                         }
-                        catch (SqlException exc)
+                        catch (SqlException exception)
                         {
-                            logger.Error(exc.Message);
-                            return null;
+                            logger.Error(exception.Message);
+                            throw exception;
                         }
                     }
+                    logger.Info($"Чат {chat.ChatName} успешно создан!");
 
                     foreach (var profile in chat.ChatMembers)
                     {
@@ -70,21 +70,24 @@ namespace Messenger.DataLayer.SQL
                             {
                                 command.ExecuteNonQuery();
                             }
-                            catch (SqlException exc)
+                            catch (SqlException exception)
                             {
-                                logger.Error(exc.Message);
-                                return null;
+                                logger.Error(exception.Message);
+                                throw exception;
                             }
                         }
+                        logger.Info($"Пользователь с {profile.Login} добавлен в чат {chat.ChatName}!");
                     }
 
                     transaction.Commit();
                     chat.ChatMembers = chat.ChatMembers.Select(x => profilesRepository.GetProfile(x.Id));
+                    logger.Info($"Создание чата завершено.");
                     return chat;
                 }
             }
         }
 
+        // Получение чата. //
         public Chat GetChat(Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -96,8 +99,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return null;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
@@ -107,7 +110,7 @@ namespace Messenger.DataLayer.SQL
                     using (var reader = command.ExecuteReader())
                     {
                         if (!reader.Read())
-                            throw new ArgumentException($"Чат с chatId {chatId} не найден");
+                            throw new Exception($"Чат с chatId {chatId} не найден");
                         return new Chat
                         {
                             ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
@@ -119,6 +122,7 @@ namespace Messenger.DataLayer.SQL
             }
         }
 
+        // Удаление чата. //
         public void DeleteChat(Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -130,8 +134,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
@@ -142,12 +146,13 @@ namespace Messenger.DataLayer.SQL
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (SqlException exc)
+                    catch (SqlException exception)
                     {
-                        logger.Error(exc.Message);
-                        return;
+                        logger.Error(exception.Message);
+                        throw exception;
                     }
                 }
+                logger.Info($"Удаление пользователей из чата {chatId} завершено.");
                 using (var command = connection.CreateCommand())
                 {
                     logger.Info("Удаление чата {0}", chatId);
@@ -157,52 +162,17 @@ namespace Messenger.DataLayer.SQL
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (SqlException exc)
+                    catch (SqlException exception)
                     {
-                        logger.Error(exc.Message);
-                        return;
+                        logger.Error(exception.Message);
+                        throw exception;
                     }
                 }
+                logger.Info($"Удаление чата {chatId} завершено.");
             }
         }
 
-        public IEnumerable<Chat> GetChat(string chatName)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                logger.Debug("Получение чата по имени...");
-                try
-                {
-                    connection.Open();
-                }
-                catch (SqlException exception)
-                {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    yield break;
-                }
-                using (var command = connection.CreateCommand())
-                {
-                    logger.Info("Получение чата {0}", chatName);
-                    command.CommandText = "SELECT ChatId, ChatName FROM Chats WHERE ChatName = @ChatName";
-                    command.Parameters.AddWithValue("@ChatName", chatName);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (!reader.Read())
-                            throw new ArgumentException($"Чат с chatName {chatName} не найден");
-                        while (reader.Read())
-                        {
-                            yield return new Chat
-                            {
-                                ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
-                                ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
-                                ChatMembers = GetChatMembers(reader.GetGuid(reader.GetOrdinal("ChatId")))
-                            };
-                        }
-                    }
-                }
-            }
-        }
-
+        // Добавление пользователя в чат. // TODO: добавить создание запроса на добавление в чат???
         public void AddChatMember(Guid userId, Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -214,8 +184,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
@@ -227,15 +197,17 @@ namespace Messenger.DataLayer.SQL
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (SqlException exc)
+                    catch (SqlException exception)
                     {
-                        logger.Error(exc.Message);
-                        return;
+                        logger.Error(exception.Message);
+                        throw exception;
                     }
                 }
+                logger.Info($"Пользователь {userId} добавлен в чат {chatId}");
             }
         }
 
+        // Удаление пользователя из чата. //
         public void DeleteChatMember(Guid userId, Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -247,8 +219,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    return;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
@@ -260,15 +232,17 @@ namespace Messenger.DataLayer.SQL
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (SqlException exc)
+                    catch (SqlException exception)
                     {
-                        logger.Error(exc.Message);
-                        return;
+                        logger.Error(exception.Message);
+                        throw exception;
                     }
                 }
+                logger.Info($"Пользователь {userId} удален из чата {chatId}");
             }
         }
 
+        // Получение пользователей чата. //
         public IEnumerable<Profile> GetChatMembers(Guid chatId)
         {
             using (var connection = new SqlConnection(connectionString))
@@ -280,8 +254,8 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    yield break;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
                 using (var command = connection.CreateCommand())
                 {
@@ -294,10 +268,12 @@ namespace Messenger.DataLayer.SQL
                             yield return profilesRepository.GetProfile(reader.GetGuid(reader.GetOrdinal("ProfileId")));
                     }
                 }
+                logger.Info($"Получение пользователей чата {chatId} завершено.");
             }
         }
 
-        public IEnumerable<Chat> FindChats(String[] names, Guid profileId)
+        // Поиск чатов по набору строк. // 
+        public IEnumerable<Chat> FindChats(String[] tokens, Guid profileId)
         {
             logger.Debug("Поиск чатов.");
             using (var connection = new SqlConnection(connectionString))
@@ -308,17 +284,17 @@ namespace Messenger.DataLayer.SQL
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    yield break;
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
                 }
-                foreach (var name in names)
+                foreach (var token in tokens)
                 {
                     using (var command = connection.CreateCommand())
                     {
 
-                        logger.Info($"Поиск чатов по строке '{name}'");
+                        logger.Info($"Поиск чатов по строке '{token}'");
                         command.CommandText = "SELECT Chats.ChatId, Chats.ChatName FROM Chats Join ChatMembers on Chats.ChatId = ChatMembers.ChatId WHERE Chats.ChatName Like @Name And ProfileId = @ProfileId";
-                        command.Parameters.AddWithValue("@Name", "%" + name + "%");
+                        command.Parameters.AddWithValue("@Name", "%" + token + "%");
                         command.Parameters.AddWithValue("@ProfileId", profileId);
                         SqlDataReader reader;
                         try
@@ -328,7 +304,7 @@ namespace Messenger.DataLayer.SQL
                         catch (SqlException exception)
                         {
                             logger.Error(exception.Message);
-                            yield break;
+                            throw exception;
                         }
                         while (reader.Read())
                         {
@@ -341,7 +317,9 @@ namespace Messenger.DataLayer.SQL
                         }
                         reader.Close();
                     }
+                    logger.Info($"Получены чаты по строке {token}.");
                 }
+                logger.Info($"Завершение поиска.");
             }
         }
     }

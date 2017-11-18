@@ -52,9 +52,11 @@ namespace Messenger.DataLayer.SQL
                     if(newProfile.Id.Equals(Guid.Empty))
                     {
                         newProfile.Id = Guid.NewGuid();
+                        logger.Info($"Создание нового ИД для пользователя...");
                     }
                     
-                    command.CommandText = "INSERT INTO Profiles (Id, Login, Password, Name, Surname, Avatar) values (@Id, @Login, @Password, @Name, @Surname, @Avatar)";
+                    command.CommandText = 
+                        "INSERT INTO Profiles (Id, Login, Password, Name, Surname, Avatar) values (@Id, @Login, @Password, @Name, @Surname, @Avatar)";
                     command.Parameters.AddWithValue("@Id", newProfile.Id);
                     command.Parameters.AddWithValue("@Login", newProfile.Login);
                     command.Parameters.AddWithValue("@Password", newProfile.Password);
@@ -62,7 +64,8 @@ namespace Messenger.DataLayer.SQL
                     command.Parameters.AddWithValue("@Surname", newProfile.Surname);
                     command.Parameters.AddWithValue("@Avatar", newProfile.Avatar);
 
-                    logger.Info("Попытка создания нового профиля с параметрами: ИД = {0}, Логин = {1}, Пароль = {2}, Имя = {3}, Фамилия = {4}, Аватар = {5}.",
+                    logger.Info(
+                        "Попытка создания нового профиля с параметрами: ИД = {0}, Логин = {1}, Пароль = {2}, Имя = {3}, Фамилия = {4}, Аватар = {5}.",
                         newProfile.Id, newProfile.Login, newProfile.Password, newProfile.Name, newProfile.Surname, newProfile.Avatar);
 
                     try
@@ -74,6 +77,7 @@ namespace Messenger.DataLayer.SQL
                         logger.Error($"Неверный аргумент передан, {exception.Message}");
                         throw exception;
                     }
+                    logger.Info($"Профиль с логином {newProfile.Login} создан.");
                     return newProfile;
                 }
             }
@@ -84,6 +88,7 @@ namespace Messenger.DataLayer.SQL
         {
             logger.Debug($"Изменение данных о пользователе с ИД { newData.Id }.");
             DeleteProfile(newData.Id);
+            logger.Info($"Профиль с логином {newData.Login} обновлен.");
             return CreateProfile(newData); 
         }
 
@@ -124,7 +129,7 @@ namespace Messenger.DataLayer.SQL
                                 Password = 0.ToString(),//reader.GetString(reader.GetOrdinal("Password")), // Не обязателдь передавать пароль. //
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
-                                Avatar = reader.GetSqlBinary(reader.GetOrdinal("Avatar")).Value,
+                                Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
                             };
                         }
                     }
@@ -183,6 +188,7 @@ namespace Messenger.DataLayer.SQL
                         throw exception;
                     }
                 }
+                logger.Info($"Профиль удален.");
             }
         }
 
@@ -221,10 +227,11 @@ namespace Messenger.DataLayer.SQL
                     }
                 }
             }
+            logger.Info($"Чаты переданы.");
         }
 
         // Возвращает коллекцию профилей с данными именем, фамилией или логином. //
-        public IEnumerable<Profile> FindProfiles(string[] names)
+        public IEnumerable<Profile> FindProfiles(string[] tokens)
         {
             logger.Debug("Поиск профилей.");
             using (var connection = new SqlConnection(connectionString))
@@ -238,14 +245,14 @@ namespace Messenger.DataLayer.SQL
                     logger.Error($"Не могу подключиться к БД, {exception.Message}");
                     throw exception;
                 }
-                foreach (var name in names)
+                foreach (var token in tokens)
                 {
                     using (var command = connection.CreateCommand())
                     {
                     
-                        logger.Info($"Поиск пользователя по строке {name}");
+                        logger.Info($"Поиск пользователя по строке {token}");
                         command.CommandText = "SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Login = @Name OR Name = @Name OR Surname = @Name";
-                        command.Parameters.AddWithValue("@Name", name);
+                        command.Parameters.AddWithValue("@Name", token);
                         SqlDataReader reader;
                         try
                         {
@@ -265,9 +272,9 @@ namespace Messenger.DataLayer.SQL
                                 Password = reader.GetString(reader.GetOrdinal("Password")),
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
-                                Avatar = reader.GetSqlBinary(reader.GetOrdinal("Avatar")).Value,
+                                Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
                             };
-                            logger.Info($"Возвращен пользователь по строке {name}");
+                            logger.Info($"Возвращен пользователь по строке {token}");
                         }
                         reader.Close();
                     }
@@ -310,7 +317,7 @@ namespace Messenger.DataLayer.SQL
                                 Password = reader.GetString(reader.GetOrdinal("Password")),
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
-                                Avatar = reader.GetSqlBinary(reader.GetOrdinal("Avatar")).Value,
+                                Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
                             };
                         }
                     }

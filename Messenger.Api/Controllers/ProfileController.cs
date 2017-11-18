@@ -11,19 +11,15 @@ using System.Data.SqlClient;
 
 namespace Messenger.Api.Controllers
 {
-    // Move to another file and expand. //
-    public class FindArray
-    {
-        public String[] names { get; set; }
-        public Guid profileId { get; set; }
-    }
-
     public class ProfileController : ApiController
     {
         private readonly IProfilesRepository profilesRepository;
-        private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
+        private const string ConnectionString = @"Data Source = ACER;
                                                   Initial Catalog=MessengerDB; 
                                                   Integrated Security=TRUE; ";
+        /*private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
+                                                  Initial Catalog=MessengerDB; 
+                                                  Integrated Security=TRUE; ";*/
 
         public ProfileController()
         {
@@ -32,7 +28,7 @@ namespace Messenger.Api.Controllers
 
         [HttpPost]
         [Route("api/profile")]
-        public Profile Create([FromBody] Profile profile)
+        public Profile CreateProfile([FromBody] Profile profile)
         {
             try
             {
@@ -46,11 +42,11 @@ namespace Messenger.Api.Controllers
                 };
                 throw new HttpResponseException(response);
             }
-            catch(Exception)
+            catch(Exception exception)
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Conflict)
                 {
-                    Content = new StringContent("Профиль с таким логином уже существует.")
+                    Content = new StringContent(exception.Message)
                 };
                 throw new HttpResponseException(response);
             }
@@ -58,7 +54,7 @@ namespace Messenger.Api.Controllers
 
         [HttpGet]
         [Route("api/profile/{id}")]
-        public Profile Get(Guid id)
+        public Profile GetProfile(Guid id)
         {
             try
             {
@@ -75,8 +71,8 @@ namespace Messenger.Api.Controllers
         }        
 
         [HttpDelete]
-        [Route("api/profile/{id}")]
-        public void Delete(Guid id)
+        [Route("api/profile/{id}")] 
+        public void DeleteProfile(Guid id)
         {
             try
             {
@@ -112,11 +108,11 @@ namespace Messenger.Api.Controllers
 
         [HttpPost]
         [Route("api/profile/find/profiles")]
-        public IEnumerable<Profile> FindProfiles([FromBody]FindArray names)
+        public IEnumerable<Profile> FindProfiles([FromBody]DataToFind data)
         {
             try
             { 
-                return profilesRepository.FindProfiles(names.names).Distinct();
+                return profilesRepository.FindProfiles(data.tokens).Distinct();
             }
             catch (SqlException exception)
             {
@@ -128,20 +124,9 @@ namespace Messenger.Api.Controllers
             }
         }
 
-        /* Deprecated
-        [HttpGet]
-        [Route("api/profile/find/{name}")]
-        public IEnumerable<Profile> GetChats(string name)
-        {
-            if (!name.Equals(null))
-                return profilesRepository.FindProfiles( new string[] { name } );
-            else
-                return null;
-        }*/
-
         [HttpPost]
         [Route("api/profile/login")]
-        public Profile GetProfile([FromBody] Profile profile)
+        public Profile Login([FromBody] Profile profile)
         {
             try
             {
@@ -155,11 +140,11 @@ namespace Messenger.Api.Controllers
                 };
                 throw new HttpResponseException(response);
             }
-            catch(Exception)
+            catch(Exception exception)
             {
                 var response = new HttpResponseMessage(HttpStatusCode.NonAuthoritativeInformation)
                 {
-                    Content = new StringContent("Пользователь с данными логином и паролем не найден")
+                    Content = new StringContent(exception.Message)
                 };
                 throw new HttpResponseException(response);
             }

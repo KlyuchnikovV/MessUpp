@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttachmentRepository.cs" />
     <Compile Include="ChatsRepository.cs" />
     <Compile Include="MessagesRepository.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

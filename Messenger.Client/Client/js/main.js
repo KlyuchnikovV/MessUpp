@@ -20,7 +20,7 @@ app.on('window-all-closed',
 app.on('ready',
     function()
     {
-    mainWindow = new BrowserWindow({width: 1010, height: 700, resizable: true});
+        mainWindow = new BrowserWindow({width: 1010, height: 700, resizable: true});
         mainWindow.loadURL('file://' + __dirname + '/../index.html');
         //mainWindow.loadURL('file://' + __dirname + '/../main.html');
         mainWindow.on('closed',

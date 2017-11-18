@@ -11,7 +11,7 @@ namespace Messenger.DataLayer.SQL.Tests
     [TestClass]
     public class ChatsRepositoryTests
     {
-        private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
+        private const string ConnectionString = @"Data Source = ACER;
                                                   Initial Catalog=MessengerDB; 
                                                   Integrated Security=TRUE; ";
 
@@ -25,7 +25,7 @@ namespace Messenger.DataLayer.SQL.Tests
             {
                 Id = Guid.NewGuid(),
                 Login = "Admin",
-                Avatar = Encoding.UTF8.GetBytes("Avatar"),
+                Avatar = Guid.NewGuid(),
                 Password = "12345",
                 Name = "admin",
                 Surname = "admin"
@@ -66,7 +66,7 @@ namespace Messenger.DataLayer.SQL.Tests
             {
                 Id = Guid.NewGuid(),
                 Login = "Admin",
-                Avatar = Encoding.UTF8.GetBytes("Avatar"),
+                Avatar = Guid.NewGuid(),
                 Password = "12345",
                 Name = "admin",
                 Surname = "admin"
@@ -102,7 +102,7 @@ namespace Messenger.DataLayer.SQL.Tests
             {
                 Id = Guid.NewGuid(),
                 Login = "Admin",
-                Avatar = Encoding.UTF8.GetBytes("Avatar"),
+                Avatar = Guid.NewGuid(),
                 Password = "12345",
                 Name = "admin",
                 Surname = "admin"
@@ -146,7 +146,7 @@ namespace Messenger.DataLayer.SQL.Tests
             {
                 Id = Guid.NewGuid(),
                 Login = "Admin",
-                Avatar = Encoding.UTF8.GetBytes("Avatar"),
+                Avatar = Guid.NewGuid(),
                 Password = "12345",
                 Name = "admin",
                 Surname = "admin"
@@ -229,7 +229,7 @@ namespace Messenger.DataLayer.SQL.Tests
             {
                 Id = Guid.NewGuid(),
                 Login = "Admin",
-                Avatar = Encoding.UTF8.GetBytes("Avatar"),
+                Avatar = Guid.NewGuid(),
                 Password = "12345",
                 Name = "admin",
                 Surname = "admin"
@@ -239,7 +239,7 @@ namespace Messenger.DataLayer.SQL.Tests
             {
                 Id = Guid.NewGuid(),
                 Login = "User",
-                Avatar = Encoding.UTF8.GetBytes("Avatar1"),
+                Avatar = Guid.NewGuid(),
                 Password = "54321",
                 Name = "user",
                 Surname = "user"
