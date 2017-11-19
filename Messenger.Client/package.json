@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . MessUpp --platform=win32 --arch=all --version=5.0.0"
+    "build": "electron-packager . MessUpp --overwrite --platform=win32 --arch=all --version=5.0.0"
   },
   "author": "Barney",
   "license": "ISC",
