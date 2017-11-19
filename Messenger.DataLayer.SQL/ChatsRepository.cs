@@ -152,6 +152,21 @@ namespace Messenger.DataLayer.SQL
                         throw exception;
                     }
                 }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info("Удаение всех сообщений из чата {0}", chatId);
+                    command.CommandText = "DELETE FROM Messages WHERE ChatId = @ChatId";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        throw exception;
+                    }
+                }
                 logger.Info($"Удаление пользователей из чата {chatId} завершено.");
                 using (var command = connection.CreateCommand())
                 {

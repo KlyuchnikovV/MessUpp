@@ -15,5 +15,6 @@ namespace Messenger.DataLayer
         IEnumerable<Message> GetMessages(Guid chatId);
         int CountMessages(Guid chatId);
         IEnumerable<Message> FindMessages(String[] names, Guid profileId);
+        void CheckUndestroyedMessages(Guid id);
     }
 }

@@ -88,9 +88,10 @@ function GetProfile(id)
 
 // Delete method. //
 // Отправляет запрос на удаление профиля по ИД. //
-function DeleteProfile(id)
+function DeleteProfile()
 {
 	var request = new XMLHttpRequest();
+	var id = document.getElementById("profileId").value;
 	var url = profileUrl + "/" + id;
 	request.open('DELETE', url, false);
 	try
@@ -106,10 +107,11 @@ function DeleteProfile(id)
 	switch(request.status)
 	{
 		case 200:
+		case 204:
 		{
 			PopUp("Профиль успешно удален.", 0, true);
 			window.location = "index.html";
-			return;
+			break;
 		}
 		default:
 		{
@@ -144,7 +146,10 @@ function GetChats()
 			responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
 			var mainList = document.getElementById("chatList");
-			mainList.innerHTML = "";
+			if(data.length > 0)
+				mainList.innerHTML = "";
+			else
+				mainList.innerHTML = '<label class="label" style="color:#ffffff">Здесь пока нет ни одного чата:(</label>';
 			for(var i = 0; i < data.length; i++)
 			{
 				var item = data[i];
@@ -360,6 +365,7 @@ function AddToChat(id)
 		case 204:
 		{
 			PopUp("Успешно!", 0, true);
+			ChatProfiles();
 			break;
 		}
 		default:
@@ -447,6 +453,7 @@ function ChatProfiles()
 				var but = document.createElement("div");
 				var img = document.createElement("img");
 				but.innerHTML = item.Name + " " + item.Surname;
+				wrap.setAttribute("title", item.Name + " " + item.Surname);
 				wrap.setAttribute("class", "personeNodes");
 				wrap.setAttribute("align", "left");
 				but.setAttribute("onclick", 'Response("' + item.Id + '")');
@@ -491,8 +498,9 @@ function SendMessage()
 	var chatId = document.getElementById("chatId").value;
 	var messageText = document.getElementById("messageArea").value;
 	var preview = document.getElementById("preview");
+	var timeToDestroy = document.getElementById("timer").value;
 	var attachId;
-	if(messageText == "" && preview.innerHTML == "")
+	if(messageText == "" && document.getElementById('file-input').files.length <= 0)
 	{
 		PopUp("Ошибка отправки сообщения: " + "пустое сообщение.", 1, false);
 		return;
@@ -509,7 +517,7 @@ function SendMessage()
 	var request = new XMLHttpRequest();
 	request.open('POST', messageUrl, false);
 	var message = '{ "ProfileId" : "' + profileId + '", "ChatId" : "' + chatId +
-					'", "MessageText" : "' + messageText + '", "Attachment" : "' + attachId + '" } ';
+					'", "MessageText" : "' + messageText + '", "Attachment" : "' + attachId + '", "TimeToDestroy" : "' + timeToDestroy + '" } ';
 	request.setRequestHeader("Content-type", "application/json");
 	try
 	{
@@ -532,6 +540,7 @@ function SendMessage()
 			document.getElementById('messageBox').setAttribute("style",
 			"visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");   
 			GetMessages(chatId);
+			SelfDestroy(timeToDestroy, chatId);
 			break;
 		}
 		default:
@@ -613,6 +622,8 @@ function GetMessages(chatId)
 				//		cache.value += array[j] + "$";
 				//}
 				inf.innerHTML = profile.Name + " " + profile.Surname;
+				if(profile.Login == "")
+					inf.innerHTML += " \\Профиль удалён\\";
 				text.innerHTML = item.MessageText;
 				text.setAttribute("class", "dialogMessage");
 				inf.setAttribute("class", "messageInf");
@@ -660,7 +671,7 @@ function GetMessages(chatId)
 			var chatData = GetChat(chatId);
 			document.getElementById("dialogName").innerHTML = chatData.ChatName;
 			document.getElementById("dialogName").setAttribute("style",
-			"visibility:visible; position:absolute;height:35px;width:100%;top:0;padding-left:15px;margin-top:0px;bottom:10px");
+			"visibility:visible; position:absolute;height:35px;width:100%;top:0;padding-left:40px;margin-top:0px;bottom:10px");
 			document.getElementById("dialog").setAttribute("style",
 				"visibility:visible; text-align:left; margin-bottom:25px; padding:0; background:#202020; height:calc(100vh - 100px); width:(100% - 20px); position: absolute; top:35px; overflow-y:auto;");
 			document.getElementById("dialog").scrollTop = document.getElementById("dialog").scrollHeight;
@@ -1048,4 +1059,48 @@ function getBase64Image(img, width, height)
 	ctx.drawImage(img, 0, 0, width, height);
 	var dataURL = canvas.toDataURL("image/png");
 	return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
+
+async function SelfDestroy(timeToUpdate, chatId)
+{
+	setTimeout(
+		function()
+		{ 
+			GetMessages(chatId);
+		}, timeToUpdate * 1000);
+}
+
+function LoadProfileInfo()
+{
+	var profileId = document.getElementById("profileId").value;
+
+	var item = GetProfile(profileId);
+	var results = document.getElementById("loginInfo");
+	var wrap = document.createElement("div");
+	var but = document.createElement("label");
+	var button = document.createElement("div");
+	var img = document.createElement("img");
+
+	but.innerHTML = item.Name + " " + item.Surname + "<br/>" + item.Login;
+	but.setAttribute("style", "display:inline-block;left:50px; position:absolute; color:white");
+	wrap.setAttribute("align", "left");
+	wrap.setAttribute("title", item.Name + " " + item.Surname);
+	img.setAttribute("style", "display:inline-block;left:15px; position:absolute");
+	img.setAttribute("height", "25px");
+	img.setAttribute("width", "25px");
+	img.setAttribute("vspace", "5px");
+	img.setAttribute("hspace", "5px");
+	if(item.Avatar != null)
+	{
+		var attachData = GetAttachData(item.Avatar);
+		img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
+	}
+	else
+	{
+		img.setAttribute("src", "./img/personWithoutImage.png");
+	}
+
+	wrap.appendChild(img);
+	wrap.appendChild(but);
+	results.appendChild(wrap);
 }

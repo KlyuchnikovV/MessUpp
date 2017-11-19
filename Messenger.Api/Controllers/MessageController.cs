@@ -96,6 +96,7 @@ namespace Messenger.Api.Controllers
         {
             try
             {
+                messagesRepository.CheckUndestroyedMessages(id);
                 List<Message> list =  messagesRepository.GetMessages(id).ToList();
                 list.Sort(delegate (Message one, Message two)
                     {

@@ -6,6 +6,7 @@ function OnLoad()
     var paramValue = window.location.href.split("?")[1].split("=")[1];
     document.getElementById("profileId").value = paramValue;
     GetChats();
+    LoadProfileInfo();
 }
 
 // Функция закрытия всех боковых панелей. //
@@ -237,7 +238,7 @@ $(document).ready(function(){
     // Выводим сообщение о приветствии .//
     var id = document.getElementById("profileId").value;
     var profile = GetProfile(id);
-    PopUp("Добро пожаловать, " + profile.Surname + " " + profile.Name + "!", 0, true);
+    PopUp("Добро пожаловать, " + profile.Name + " " + profile.Surname + "!", 0, true);
 
     // Устанавливаем интервал обновления сообщений. //
     setInterval(

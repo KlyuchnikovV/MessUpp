@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Messenger.Model;
 using System.Data.SqlClient;
 using NLog;
+using System.Threading;
 
 namespace Messenger.DataLayer.SQL
 {
@@ -10,6 +11,8 @@ namespace Messenger.DataLayer.SQL
     {
         private readonly string connectionString;
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        Thread thread;
+        Guid idOfDeleting;
 
         public MessagesRepository(string _connectionString)
         {
@@ -54,6 +57,14 @@ namespace Messenger.DataLayer.SQL
                         logger.Error(exception.Message);
                         throw exception;
                     }
+
+                    if(message.TimeToDestroy > 0)
+                    {
+                        thread = new Thread(SelfDestroy);
+                        idOfDeleting = message.MessageId;
+                        thread.Start();
+                    }
+
                     return message;
                 }
             }
@@ -249,6 +260,117 @@ namespace Messenger.DataLayer.SQL
                             };
                         }
                         reader.Close();
+                    }
+                }
+            }
+        }
+
+        // Обновляет сообщение с текстом об удалении сообщения и вложения.
+        public void SelfDestroy()
+        {
+            Message message = GetMessage(idOfDeleting);
+            logger.Debug("Активация отсчета до самоудаления сообщения...");
+            Thread.Sleep(message.TimeToDestroy * 1000);
+
+            message.MessageText = "\\Сообщение удалено.\\";
+            message.Attachment = Guid.Empty;
+            message.TimeToDestroy = 0;
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info("Удаление сообщения с параметрами: ИД сообщения = {0}, ИД профиля = {1}, ИД чата = {2}, Текст = {3}, Дата отправки = {4}, Время жизни = {5}, ИД приложения = {6}",
+                        message.MessageId, message.ProfileId, message.ChatId, message.MessageText, message.Date, message.TimeToDestroy, message.Attachment);
+                    command.CommandText = "UPDATE Messages SET MessageText = @MessageText, LifeTime = @LifeTime, AttachId = @AttachId WHERE MessageId = @MessageId";
+                    command.Parameters.AddWithValue("@MessageId", message.MessageId);
+                    command.Parameters.AddWithValue("@MessageText", message.MessageText);
+                    command.Parameters.AddWithValue("@LifeTime", message.TimeToDestroy);
+                    command.Parameters.AddWithValue("@AttachId", message.Attachment);
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        throw exception;
+                    }
+                }
+            }
+        }
+
+        public void CheckUndestroyedMessages(Guid id)
+        {
+            logger.Debug("Проверка сообщений не удаленных автоматически...");
+            List<Message> list = new List<Message>();
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT * FROM Messages WHERE LifeTime <> 0 And ChatId = @Id";
+                    command.Parameters.AddWithValue("@Id", id);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            list.Add(new Message
+                            {
+                                MessageId = reader.GetGuid(reader.GetOrdinal("MessageId")),
+                                ProfileId = reader.GetGuid(reader.GetOrdinal("ProfileId")),
+                                ChatId = reader.GetGuid(reader.GetOrdinal("ChatId")),
+                                MessageText = reader.GetString(reader.GetOrdinal("MessageText")),
+                                Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
+                                TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
+                                Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                            });
+                        }
+                    }
+                }
+                foreach(var message in list)
+                {
+                    if(message.Date.TimeOfDay.TotalSeconds + message.TimeToDestroy < DateTime.Now.TimeOfDay.TotalSeconds)
+                    {
+                        message.MessageText = "\\Сообщение удалено.\\";
+                        message.Attachment = Guid.Empty;
+                        message.TimeToDestroy = 0;
+                        using (var command = connection.CreateCommand())
+                        {
+                            logger.Info("Удаление сообщения с параметрами: ИД сообщения = {0}, ИД профиля = {1}, ИД чата = {2}, Текст = {3}, Дата отправки = {4}, Время жизни = {5}, ИД приложения = {6}",
+                                message.MessageId, message.ProfileId, message.ChatId, message.MessageText, message.Date, message.TimeToDestroy, message.Attachment);
+                            command.CommandText = "UPDATE Messages SET MessageText = @MessageText, LifeTime = @LifeTime, AttachId = @AttachId WHERE MessageId = @MessageId";
+                            command.Parameters.AddWithValue("@MessageId", message.MessageId);
+                            command.Parameters.AddWithValue("@MessageText", message.MessageText);
+                            command.Parameters.AddWithValue("@LifeTime", message.TimeToDestroy);
+                            command.Parameters.AddWithValue("@AttachId", message.Attachment);
+                            try
+                            {
+                                command.ExecuteNonQuery();
+                            }
+                            catch (SqlException exception)
+                            {
+                                logger.Error(exception.Message);
+                                throw exception;
+                            }
+                        }
                     }
                 }
             }

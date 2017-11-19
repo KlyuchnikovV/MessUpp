@@ -176,8 +176,10 @@ namespace Messenger.DataLayer.SQL
                 using (var command = connection.CreateCommand())
                 {
                     logger.Info("Удаление пользователя из профилей.");
-                    command.CommandText = "DELETE FROM Profiles WHERE Id = @Id";
-                    command.Parameters.AddWithValue("@Id", id);
+                    command.CommandText = "Update Profiles SET Login = @Login, Password = @Password WHERE Id = @ProfileId";
+                    command.Parameters.AddWithValue("@ProfileId", id);
+                    command.Parameters.AddWithValue("@Login", "");
+                    command.Parameters.AddWithValue("@Password", "");
                     try
                     {
                         command.ExecuteNonQuery();

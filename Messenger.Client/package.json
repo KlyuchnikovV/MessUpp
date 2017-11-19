@@ -4,11 +4,13 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "build": "electron-packager . MessUpp --platform=win32 --arch=all --version=5.0.0"
   },
-  "author": "",
+  "author": "Barney",
   "license": "ISC",
   "devDependencies": {
+    "electron-packager": "5.0.0",
     "electron-prebuilt": "^1.4.13"
   },
   "dependencies": {

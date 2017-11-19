@@ -67,19 +67,11 @@
             </div>
             <div class="settingsPanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
-                    <label class="label"><br/><h1>Настройки:</h1></label>
-                    <div align="center"onclick="DeleteProfile()"class="divButton">
-                        <label class="label" style="position:absolute;background-color:red;margin-top:5px;margin-left:5px;">Удалить профиль:</label>
-                        <img src="./img/close.png" height="25px" width="25px" vspace="10px" hspace="5px" style="display:inline-block;"  >                    
-                    </div>
-                </div>
-            </div>
-            <div class="logoutPanel" align="center">
-                <div style="color: rgb(64, 64, 179);">
-                    <label class="label"><br/><h1>Выход из сети</h1></label>
-                    <label class="label">Вы уверены?<br/><br/></label>
-                    <button class="createChatArea" style="display:inline" onclick="window.location='index.html'">Да</button>
-                    <button class="createChatArea" style="display:inline" onclick="document.getElementById('divButtonLogout').click()">Вернуться</button>
+                    <label class="label"><br/><h1>Настройки:</h1><br/></label>
+                    <div id="loginInfo" style="height:75px"></div>
+                    <div align="center"onclick="DeleteProfile()"class="chatNodes" style="background-color:red;width:180px;height:50px;">
+                        <label><br/>Удалить профиль:</label>      
+                    </div>    
                 </div>
             </div>
             <div class="peoplePanel" align="center">
@@ -90,6 +82,15 @@
                     <label style="color:#ffffff">Чат не выбран</label>
                 </div>
             </div>
+            <div class="logoutPanel" align="center">
+                <div style="color: rgb(64, 64, 179);">
+                    <label class="label"><br/><h1>Выход из сети</h1></label>
+                    <label class="label">Вы уверены?<br/><br/></label>
+                    <button class="createChatArea" style="display:inline" onclick="window.location='index.html'">Да</button>
+                    <button class="createChatArea" style="display:inline" onclick="document.getElementById('divButtonLogout').click()">Вернуться</button>
+                </div>
+            </div>
+            
             <input type="hidden" id="chatsHidden" value="false"/>
             <input type="hidden" id="findHidden" value="false"/>
             <input type="hidden" id="createHidden" value="false"/>
@@ -103,26 +104,32 @@
         </div>
         <!-- Сделать отображение файлов -->
         <!-- Панель чата -->
-        <div class="dialogPanel" id="dialogPanel">
+        <div class="dialogPanel" id="dialogPanel" style="padding-right:35px">
 			<div class="dialogMeta" id="dialogMeta">
                 <img src="./img/chatWithoutImage.png" height="25px" width="25px" vspace="5px" hspace="5px" style="display:inline-block"/>
-                <label id="dialogName" class="dialogName" style="display:inline-block; margin-bottom:5px"></label>
-                <img src="./img/close.png" height="25px" width="25px" vspace="5px" hspace="5px" style="display:inline-block;position:absolute;margin-left:90%" onclick="DeleteChatProfile()" class="divButton">
+                <label id="dialogName" class="dialogName" style="display:inline-block; margin-bottom:5px;"></label>
+                <img src="./img/close.png" height="25px" width="25px" vspace="5px" hspace="5px" style="display:inline-block;position:absolute;" onclick="DeleteChatProfile()" class="divButton" title="Выйти из чата">
 			</div>
 
             <div id="dialog" class="dialog">
             </div>
-            <div class="messageBox" style="background-color:#202020;visibility:hidden;width:100%; height:39px; position:absolute; bottom:3px; left: 0px; min-width:765px" id="messageBox">
-                <div id="preview" style="position:absolute;left:35px;height:110px;width:100px;resize:none;top:5px; bottom:5px;display:inline-block">
+
+            <div class="messageBox" style="background-color:#202020;visibility:hidden;width:100%; height:49px; position:absolute; bottom:13px; left: 0px; min-width:765px" id="messageBox">
+                <div id="preview" style="position:absolute;left:100px;height:110px;width:100px;resize:none;top:5px; bottom:5px;display:inline-block">
                 </div>
-                <div class="divButton" id="attachButton" style="background-color:#202020;width:35px; display:inline-block;position:absolute;bottom:5px;">
+                <div class="divButton" id="attachButton" style="background-color:#202020;width:35px;display:inline-block;position:absolute;bottom:5px;">
                     <label for="file-input">
                         <img class="icon" src="./img/attach.png" height="25px" width="25px" vspace="5px" hspace="4px" title="Прикрепить файл"/>
                     </label>
                     <input id="file-input" type="file" style="width:25px; height:25px"/>
                 </div>
-                <textarea class="messageArea" style="position:absolute;left:35px;resize:none;bottom:0;overflow:hidden; overflow-y: scroll; min-width:600px;height:39px; width:calc(100% - 95px)" id="messageArea"></textarea>
-                <div class="divButton" id="sendButton" style="background-color:#202020;width:35px;display:inline-block; position:absolute; left:calc(100% - 40px);bottom:3px;" onclick="SendMessage();">
+                <div>
+                    <label style="color:#ffffff;position:absolute;left:5px;bottom:75px;width:100px;resize:none;display:inline-block">До удаления:<br/></label>
+                    <input type="text" id="timer" style="position:absolute;left:5px;bottom:50px;width:30px;resize:none;display:inline-block"/>
+                    <label style="color:#ffffff;position:absolute;left:45px;bottom:50px;width:30px;resize:none;display:inline-block">сек.</label>
+                </div>
+                <textarea class="messageArea" style="position:absolute;left:35px;resize:none;bottom:0;overflow:hidden; overflow-y: scroll; min-width:550px;height:39px; width:calc(100% - 120px)" id="messageArea"></textarea>
+                <div class="divButton" id="sendButton" style="background-color:#202020;width:35px;display:inline-block; position:absolute; left:calc(100% - 70px);bottom:3px;" onclick="SendMessage();">
                     <img class="icon" src="./img/send.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Отправить"/>
                 </div>
             </div>
