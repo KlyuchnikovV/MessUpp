@@ -1,8 +1,8 @@
-{    
+{
     "version": "0.1.0",
-    "configurations": 
+    "configurations":
     [
-        {     
+        {
             "name": "Launch Electron App",
             "type": "node",
             "request": "launch",
@@ -13,8 +13,8 @@
             // next line is very important
             "runtimeExecutable": "${workspaceFolder}/node_modules/electron/dist/electron.exe",
             //"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "env": { }, 
+            "env": { },
             "sourceMaps": false
-        } 
+        }
     ]
 }

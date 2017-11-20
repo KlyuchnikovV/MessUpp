@@ -1,11 +1,13 @@
 {
-  "name": "client",
-  "version": "1.0.1",
+  "name": "messupp",
+  "version": "1.0.0",
   "description": "",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . MessUpp --overwrite --platform=win32 --arch=all --version=5.0.0"
+    "buildAll": "electron-packager . MessUpp --overwrite --platform=win32 --arch=all --version=5.0.0",
+    "buildWin32": "electron-packager . MessUpp --overwrite --platform=win32 --arch=ia32 --version=5.0.0 --icon=icon.ico",
+    "buildWin64": "electron-packager . MessUpp --overwrite --platform=win32 --arch=x64 --version=5.0.0"
   },
   "author": "Barney",
   "license": "ISC",

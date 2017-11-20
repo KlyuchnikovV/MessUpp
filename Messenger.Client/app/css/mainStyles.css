@@ -1,0 +1,225 @@
+.body
+{
+    margin:0px;
+    overflow: hidden;/**/
+    background-color: #202020;
+    /*background-color: #018813; */
+    min-width:765px;
+}
+
+.cmdPanel
+{
+    border:0px solid #CD853F;
+    width:35px;
+    height:100vh;
+    float:left;
+    background-color: #404040;
+}
+.cmdPanel > div,
+{
+    padding: 0px;
+    border: 0px solid #CD853F;
+    color: #C0C0C0;
+    height: 35px;
+    width: 35px
+}
+.cmdPanel > div:active,
+.divButton:active,
+.chatNodes:active
+{
+    background-color: #C0C0C0;
+    box-shadow: 0 0 5px -2px rgba(0,0,0,0.6);
+}
+.cmdPanel > div > img:hover,
+.icon:hover,
+.chatNodes:hover,
+.divButton:hover
+{
+    -webkit-filter: invert(100%);
+    filter: invert(100%);
+}
+.chatNodes,
+.personeNodes
+{
+    background-color:#1C2139;
+    color: #ffffff;
+    padding-left:5px;
+    margin-top:5px;
+    height:35px;
+    width: 90%;
+    margin-left:5%;
+    margin-top:2%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 9px;
+    display: inline-block;
+}
+.dialogPanel,
+.introPanel
+{
+    position: absolute;
+    left:35px;
+    top:0px;
+    border-top: 0px;
+    bottom:0;
+    min-width:765px;
+}
+
+/*общий блок*/
+.slidePanelWrap
+{
+    width:200px;
+    position:relative; /*обязательное свойство*/
+    overflow:hidden; /*обязательное свойство*/
+}
+
+/*элементы левой панели*/
+.chatsPanel,
+.loginPanel
+{
+    margin-left:-235px; /*обязательное свойство*/
+    padding:0px;
+    width:200px;
+    position:relative; /*обязательное свойство*/
+    top:0; /*обязательное свойство*/
+    left:0; /*обязательное свойство*/
+    background:#303030;
+    height: 100vh;
+}
+
+.createPanel,
+.findPanel,
+.settingsPanel,
+.logoutPanel,
+.peoplePanel,
+.registerPanel
+{
+    margin-left:-200px; /*обязательное свойство*/
+    padding:0px;
+    width:200px;
+    position: absolute; /*обязательное свойство*/
+    top:0; /*обязательное свойство*/
+    left:0; /*обязательное свойство*/
+    background:#303030;
+    height: 100vh;
+}
+
+.popUp
+{
+    padding:0px;
+    position:absolute; /*обязательное свойство*/
+    top:-50px; /*обязательное свойство*/
+    left:240vw; /*обязательное свойство*/
+}
+
+.messageBox,
+.messageArea
+{
+    position: absolute;
+    width: 100%;
+    vertical-align: bottom;
+    background:#303030;
+}
+
+.messageArea
+{
+    background-color: #C0C0C0;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 9px;
+    position: absolute;
+    bottom: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.dialog
+{
+    text-align:left;
+    margin-bottom:25px;
+    padding:0px;
+    background:#202020;
+    height:calc(100vh - 85px);
+    width:100%;
+    position: absolute;
+    top:35px;
+    border:0px solid #ACD8F0;
+    overflow-y: scroll;
+    visibility: hidden;
+    padding-right: 10px;
+    /*overflow:auto; */
+}
+
+.divButton > input
+{
+    display: none;
+}
+
+.divButton img
+{
+    cursor: pointer;
+}
+
+.dialogMeta
+{
+    position:absolute;
+    height:35px;
+    width:100%;
+    top:0;
+    background-color:#C0C0C0;
+    visibility: hidden;
+    font-size: 190%;
+    text-align: left;
+}
+
+.timer
+{
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 9px;
+    background-color: #505050;
+    padding-left: 5px;
+    color:#FFFFFF;
+}
+
+.dialogMessage
+{
+    background-color: #C0C0C0;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 9px;
+    margin-top:2%;
+    height:10%;
+    width: 50%;
+    padding-left: 5px;
+    color: black;
+}
+
+::-webkit-scrollbar-track
+{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    background-color: #303030;
+}
+
+::-webkit-scrollbar
+{
+    width: 12px;
+    background-color: #808080;
+}
+
+::-webkit-scrollbar-thumb
+{
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: #808080;
+    margin-right: 10px;
+}
+
+.createChatArea
+{
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 9px;
+    padding-left: 5px;
+}
+
+.easy-autocomplete
+{
+    flex :1;
+}

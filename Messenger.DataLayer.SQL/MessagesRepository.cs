@@ -233,7 +233,7 @@ namespace Messenger.DataLayer.SQL
                     {
 
                         logger.Info($"Поиск сообщений по строке {name}");
-                        command.CommandText = "SELECT * FROM Messages WHERE MessageText Like @name And ProfileId = @ProfileId ";
+                        command.CommandText = "select * from Messages Where MessageText Like @Name and ChatId in (SELECT ChatId from ChatMembers where ProfileId = @ProfileId) and ProfileId IN (SELECT ProfileId from ChatMembers where ChatId in (SELECT ChatId from ChatMembers where ProfileId = @ProfileId));";
                         command.Parameters.AddWithValue("@Name", "%" + name + "%");
                         command.Parameters.AddWithValue("@ProfileId", profileId);
                         SqlDataReader reader;

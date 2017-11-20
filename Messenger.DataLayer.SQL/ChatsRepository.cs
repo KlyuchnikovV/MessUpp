@@ -254,6 +254,23 @@ namespace Messenger.DataLayer.SQL
                     }
                 }
                 logger.Info($"Пользователь {userId} удален из чата {chatId}");
+                using (var command = connection.CreateCommand())
+                {
+                    int count = 0;
+                    logger.Info($"Проверка чата {chatId} на наличие пользоателей.");
+                    command.CommandText = "SELECT COUNT(*) FROM ChatMembers WHERE ChatId = @ChatId";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                            count = reader.GetInt32(reader.GetOrdinal("count"));
+                    }
+                    if(count <= 0)
+                    {
+                        logger.Info($"Удаление чата {chatId} - нет пользователей.");
+                        DeleteChat(chatId);
+                    }
+                }
             }
         }
 

@@ -13,7 +13,7 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>Messenger.Client</Name>
-    <NodeExePath>C:\Users\Валерий\Desktop\Messenger\Messenger.Client\node_modules\electron\dist\electron.exe</NodeExePath>
+    <NodeExePath>./Messenger.Client/node_modules/electron/dist/electron.exe</NodeExePath>
     <NodejsPort>5858</NodejsPort>
     <StartWebBrowser>False</StartWebBrowser>
   </PropertyGroup>
