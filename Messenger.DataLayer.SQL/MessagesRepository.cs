@@ -212,7 +212,7 @@ namespace Messenger.DataLayer.SQL
             return 0;
         }
 
-        // Ищет все сообщения . // Надо исправить чтобы искал по всем чатам пользователя
+        // Ищет все сообщения . //
         public IEnumerable<Message> FindMessages(String[] names, Guid profileId)
         {
             logger.Debug("Поиск по сообщениям.");
@@ -272,8 +272,8 @@ namespace Messenger.DataLayer.SQL
             logger.Debug("Активация отсчета до самоудаления сообщения...");
             Thread.Sleep(message.TimeToDestroy * 1000);
 
-            message.MessageText = "\\Сообщение удалено.\\";
-            message.Attachment = Guid.Empty;
+            message.MessageText = "Сообщение удалено.";
+            message.Attachment = Guid.Parse("00000000-0000-0000-0000-000000000001");
             message.TimeToDestroy = 0;
 
             using (var connection = new SqlConnection(connectionString))
@@ -350,7 +350,7 @@ namespace Messenger.DataLayer.SQL
                     if(message.Date.TimeOfDay.TotalSeconds + message.TimeToDestroy < DateTime.Now.TimeOfDay.TotalSeconds)
                     {
                         message.MessageText = "\\Сообщение удалено.\\";
-                        message.Attachment = Guid.Empty;
+                        message.Attachment = Guid.Parse("00000000-0000-0000-0000-000000000001");
                         message.TimeToDestroy = 0;
                         using (var command = connection.CreateCommand())
                         {

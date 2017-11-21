@@ -268,13 +268,13 @@ $(document).ready(function(){
             {
                 img = document.createElement('img');
                 var close = document.createElement('div');
-                close.setAttribute("src", "./img/close.png");
+                close.setAttribute("src", "./img/close2.png");
 				close.setAttribute("height", "25px");
 				close.setAttribute("width", "25px");
 				close.setAttribute("vspace", "5px");
 				close.setAttribute("hspace", "5px");
 				close.setAttribute("style", "background-color:#ffffff;position:absolute;margin-right:5px;margin-left:75px;height:25px;width:25px;top:0px;z-index:90;");
-				//close.setAttribute("onclick", "DeleteChat('" + item.ChatId + "')");
+				close.setAttribute("onclick", "DeleteAttach()");
 				close.setAttribute("class", "divButton");
                 img.setAttribute("style", "top:5px;height:100px;width:100%;display:inline-block");
                 img.setAttribute("id", "previewImage");
@@ -393,9 +393,62 @@ $(document).ready(function(){
 function TimerValidator(input)
 {
     var value = input.value;
-    var rep = /^\d+$/;
-    if(!rep.test(value))
+    var rep = /^\d+$/;
+    if(!rep.test(value))
     {
-        input.value = "0";
+        input.value = "0";
     }
+}
+
+// Выводит информацию о профиле в раздел настроек. //
+function LoadProfileInfo()
+{
+	var profileId = document.getElementById("profileId").value;
+
+	var item = GetProfile(profileId);
+	var results = document.getElementById("loginInfo");
+	var wrap = document.createElement("div");
+	var but = document.createElement("label");
+	var button = document.createElement("div");
+	var img = document.createElement("img");
+
+	but.innerHTML = item.Name + " " + item.Surname + "<br/>" + item.Login;
+	but.setAttribute("style", "display:inline-block;left:50px; position:absolute; color:white");
+	wrap.setAttribute("align", "left");
+	wrap.setAttribute("title", item.Name + " " + item.Surname);
+	img.setAttribute("style", "display:inline-block;left:15px; position:absolute");
+	img.setAttribute("height", "25px");
+	img.setAttribute("width", "25px");
+	img.setAttribute("vspace", "5px");
+	img.setAttribute("hspace", "5px");
+	if(item.Avatar != null)
+	{
+		var attachData = GetAttachData(item.Avatar);
+		img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
+	}
+	else
+	{
+		img.setAttribute("src", "./img/personWithoutImage.png");
+	}
+
+	wrap.appendChild(img);
+	wrap.appendChild(but);
+	results.appendChild(wrap);
+}
+
+async function SelfDestroy(timeToUpdate, chatId)
+{
+	setTimeout(
+		function()
+		{
+			GetMessages(chatId);
+		}, timeToUpdate * 1000);
+}
+
+function DeleteAttach()
+{
+    document.getElementById('preview').innerHTML = "";
+    document.getElementById('file-input').value = "";
+    document.getElementById('messageBox').setAttribute("style",
+    "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px"); 
 }

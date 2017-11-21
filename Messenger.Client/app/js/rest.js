@@ -1,9 +1,9 @@
 const fs = require('fs');
 
-// Пути к контроллерам
-var profileUrl = "http://localhost:49856/api/profile";
-var chatUrl = "http://localhost:49856/api/chat";
-var messageUrl = "http://localhost:49856/api/message";
+// Пути к контроллерам. //
+var profileUrl    = "http://localhost:49856/api/profile";
+var chatUrl       = "http://localhost:49856/api/chat";
+var messageUrl    = "http://localhost:49856/api/message";
 var attachmentUrl = "http://localhost:49856/api/attach";
 
 /// Profile methods. ///
@@ -12,6 +12,12 @@ var attachmentUrl = "http://localhost:49856/api/attach";
 //  Отправляет запрос на создание нового профиля. //
 function CreateUser(id)
 {
+	if(document.getElementById("registerPassed").value == 'false')
+	{
+		PopUp("Валидация полей не пройдена.", 1, false);
+		return;
+	}
+
 	var name = document.getElementById("txtName").value;
 	var surname = document.getElementById("txtSurname").value;
 	var login = document.getElementById("txtLogin").value;
@@ -548,10 +554,7 @@ function SendMessage()
 			responseBody = request.responseText;
 			var data = JSON.parse(responseBody);
 			document.getElementById("messageArea").value = "";
-			preview.innerHTML = "";
-			document.getElementById('file-input').innerHTML = document.getElementById('file-input').innerHTML;
-			document.getElementById('messageBox').setAttribute("style",
-			"visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");   
+			DeleteAttach();
 			GetMessages(chatId);
 			SelfDestroy(timeToDestroy, chatId);
 			break;
@@ -636,7 +639,7 @@ function GetMessages(chatId)
 				//}
 				inf.innerHTML = profile.Name + " " + profile.Surname;
 				if(profile.Login == "")
-					inf.innerHTML += " \\Профиль удалён\\";
+					inf.innerHTML += " ( *Профиль удалён* )";
 				text.innerHTML = item.MessageText;
 				text.setAttribute("class", "dialogMessage");
 				inf.setAttribute("class", "messageInf");
@@ -659,8 +662,17 @@ function GetMessages(chatId)
 						"float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");					
 				}
 				message.appendChild(inf);
-				message.appendChild(text);
-				if(item.Attachment != '00000000-0000-0000-0000-000000000000')
+				if(item.Attachment == '00000000-0000-0000-0000-000000000001')
+				{
+					var deleted = document.createElement("div");
+					deleted.innerHTML = "Сообщение удалено."
+					deleted.setAttribute("style", 
+					"padding-left:10px;color:white;float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");					
+					message.appendChild(deleted);
+				}
+				else
+					message.appendChild(text);
+				if(item.Attachment != '00000000-0000-0000-0000-000000000000' && item.Attachment != '00000000-0000-0000-0000-000000000001')
 				{
 					var attachData = GetAttachData(item.Attachment);
 					attach.setAttribute("src", 'data:image/png;base64,' + attachData.Data);
@@ -969,7 +981,7 @@ function Find()
 function LoadAvatar()
 {
 	var img = document.getElementById("avatar");
-	if(!img)
+	if(document.getElementById("avatarFile").value == "")
 	{
 		CreateUser(0);
 	}
@@ -1069,59 +1081,4 @@ function GetAttachData(id)
 			break;
 		}
 	}
-}
-
-function getBase64Image(img, width, height)
-{
-	var canvas = document.createElement("canvas");
-	canvas.width = img.width;
-	canvas.height = img.height;
-	var ctx = canvas.getContext("2d");
-	ctx.drawImage(img, 0, 0, width, height);
-	var dataURL = canvas.toDataURL("image/png");
-	return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-}
-
-async function SelfDestroy(timeToUpdate, chatId)
-{
-	setTimeout(
-		function()
-		{
-			GetMessages(chatId);
-		}, timeToUpdate * 1000);
-}
-
-function LoadProfileInfo()
-{
-	var profileId = document.getElementById("profileId").value;
-
-	var item = GetProfile(profileId);
-	var results = document.getElementById("loginInfo");
-	var wrap = document.createElement("div");
-	var but = document.createElement("label");
-	var button = document.createElement("div");
-	var img = document.createElement("img");
-
-	but.innerHTML = item.Name + " " + item.Surname + "<br/>" + item.Login;
-	but.setAttribute("style", "display:inline-block;left:50px; position:absolute; color:white");
-	wrap.setAttribute("align", "left");
-	wrap.setAttribute("title", item.Name + " " + item.Surname);
-	img.setAttribute("style", "display:inline-block;left:15px; position:absolute");
-	img.setAttribute("height", "25px");
-	img.setAttribute("width", "25px");
-	img.setAttribute("vspace", "5px");
-	img.setAttribute("hspace", "5px");
-	if(item.Avatar != null)
-	{
-		var attachData = GetAttachData(item.Avatar);
-		img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
-	}
-	else
-	{
-		img.setAttribute("src", "./img/personWithoutImage.png");
-	}
-
-	wrap.appendChild(img);
-	wrap.appendChild(but);
-	results.appendChild(wrap);
 }

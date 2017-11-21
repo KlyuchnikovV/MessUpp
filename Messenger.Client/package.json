@@ -1,12 +1,13 @@
 {
   "name": "messupp",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple messenger.",
   "main": "main.js",
+  "icon": "./icon.ico",
   "scripts": {
     "start": "electron .",
     "buildAll": "electron-packager . MessUpp --overwrite --platform=win32 --arch=all --version=5.0.0",
-    "buildWin32": "electron-packager . MessUpp --overwrite --platform=win32 --arch=ia32 --version=5.0.0 --icon=icon.ico",
+    "buildWin32": "electron-packager . MessUpp --overwrite --platform=win32 --arch=ia32 --version=5.0.0",
     "buildWin64": "electron-packager . MessUpp --overwrite --platform=win32 --arch=x64 --version=5.0.0",
     "pack": "electron-builder --dir ",
     "dist": "electron-builder --w --ia32"
@@ -18,7 +19,8 @@
     "electron-prebuilt": "^1.4.13"
   },
   "build": {
-    "appId": "com.messup.app"
+    "appId": "com.messup.app",
+    "files": ["/icon.*"]
   },
   "dependencies": {
     "jquery": "3.2.1",
