@@ -13,7 +13,7 @@ namespace Messenger.Api.Controllers
     public class AttachmentController : ApiController
     {
         private readonly IAttachmentRepository attachRepository;
-        private const string ConnectionString = @"Data Source = ACER;
+         private const string ConnectionString = @"Data Source = ACER;
                                                   Initial Catalog=MessengerDB; 
                                                   Integrated Security=TRUE; ";
         /*private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;

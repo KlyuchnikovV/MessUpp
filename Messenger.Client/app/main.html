@@ -34,7 +34,7 @@
         </div>
         <!-- Боковые панели -->
         <div class="slidePanelWrap">
-            <div class="chatsPanel" align="center">
+            <div class="chatsPanel" align="center" id="chatsPanel">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Чаты:</h1></label>
                 </div>
@@ -42,7 +42,7 @@
                     <label class="label" style="color:#ffffff">Здесь пока нет ни одного чата:(</label>
                 </div>
             </div>
-            <div class="createPanel" align="center">
+            <div class="createPanel" align="center" id="createPanel">
                 <div style="color: rgb(64, 64, 179);" >
                     <label class="label"><br/><h1>Создать чат</h1></label>
                 </div>
@@ -57,7 +57,7 @@
                     <input id="createButton" class="createChatArea" value="Создать чат" type="button" onclick="CreateChat()"/>
                 </div>
             </div>
-            <div class="findPanel" align="center">
+            <div class="findPanel" align="center" id="findPanel">
                 <div style="color: rgb(64, 64, 179);" >
                     <label class="label"><br/><h1>Поиск:</h1></label>
                 </div>
@@ -66,10 +66,31 @@
                 <div id="searchResults">
                 </div>
             </div>
-            <div class="settingsPanel" align="center">
+            <div class="settingsPanel" align="center" id="settingsPanel">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Настройки:</h1><br/></label>
-                    <div id="loginInfo" style="height:75px"></div>
+                    <div id="avatarDiv">
+                        <!-- Create default picture for user -->
+                        <img id="avatar" style="max-height:200px; max-width:150px" src="./img/personWithoutImage.png"/>
+                    </div>
+                    <div id="divName" class="inputBox">
+                        <label style="color:#ffffff"><br/>Ваше имя:</label>
+                        <div>
+                            <label style="color:#5a68e6" id="currentName"></label>
+                        </div>
+                    </div>
+                    <div id="divSurname" class="inputBox">
+                        <label style="color:#ffffff"><br/>Ваша фамилия:</label>
+                        <div>
+                            <label style="color:#5a68e6" id="currentSurname"></label>
+                        </div>
+                    </div>
+                    <div id="divLogin" class="inputBox">
+                        <label style="color:#ffffff"><br/>Ваш логин:</label>
+                        <div>
+                            <label style="color:#5a68e6" id="currentLogin"></label><br/><br/>
+                        </div>
+                    </div>
                     <div align="center"onclick="DeleteProfile()"class="chatNodes" style="background-color:red;width:180px;height:50px;">
                         <label><br/>Удалить профиль:</label>
                     </div>
@@ -83,11 +104,11 @@
                     <label style="color:#ffffff">Чат не выбран</label>
                 </div>
             </div>
-            <div class="logoutPanel" align="center">
+            <div class="logoutPanel" align="center" id="logoutPan">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Выход из сети</h1></label>
                     <label class="label">Вы уверены?<br/><br/></label>
-                    <button class="createChatArea" style="display:inline" onclick="window.location='login.html'">Да</button>
+                    <button class="createChatArea" style="display:inline" onclick="Logout(); window.location='login.html';">Да</button>
                     <button class="createChatArea" style="display:inline" onclick="document.getElementById('divButtonLogout').click()">Вернуться</button>
                 </div>
             </div>
@@ -143,7 +164,7 @@
         </div>
         <input type="hidden" id="profileId" value=""/>
         <input type="hidden" id="chatId" value=""/>
-        <input type="hidden" id="cache" value="Привет$"/>
         <input type="hidden" id="count" value="0"/>
+        <input type="hidden" id="isRead" value="false"/>
     </body>
 </html>

@@ -105,6 +105,7 @@ namespace Messenger.DataLayer.SQL
                             Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
                             TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
                             Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                            IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead"))
                         };
                     }
                 }
@@ -176,6 +177,7 @@ namespace Messenger.DataLayer.SQL
                                 Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
                                 TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
                                 Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                                IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead"))
                             };
                     }
                 }
@@ -212,7 +214,7 @@ namespace Messenger.DataLayer.SQL
             return 0;
         }
 
-        // Ищет все сообщения . // Надо исправить чтобы искал по всем чатам пользователя
+        // Ищет все сообщения . //
         public IEnumerable<Message> FindMessages(String[] names, Guid profileId)
         {
             logger.Debug("Поиск по сообщениям.");
@@ -272,8 +274,8 @@ namespace Messenger.DataLayer.SQL
             logger.Debug("Активация отсчета до самоудаления сообщения...");
             Thread.Sleep(message.TimeToDestroy * 1000);
 
-            message.MessageText = "\\Сообщение удалено.\\";
-            message.Attachment = Guid.Empty;
+            message.MessageText = "Сообщение удалено.";
+            message.Attachment = Guid.Parse("00000000-0000-0000-0000-000000000001");
             message.TimeToDestroy = 0;
 
             using (var connection = new SqlConnection(connectionString))
@@ -350,7 +352,7 @@ namespace Messenger.DataLayer.SQL
                     if(message.Date.TimeOfDay.TotalSeconds + message.TimeToDestroy < DateTime.Now.TimeOfDay.TotalSeconds)
                     {
                         message.MessageText = "\\Сообщение удалено.\\";
-                        message.Attachment = Guid.Empty;
+                        message.Attachment = Guid.Parse("00000000-0000-0000-0000-000000000001");
                         message.TimeToDestroy = 0;
                         using (var command = connection.CreateCommand())
                         {
@@ -372,6 +374,31 @@ namespace Messenger.DataLayer.SQL
                             }
                         }
                     }
+                }
+            }
+        }
+
+        public void UpdateMessageRead(Guid id)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Установка флага IsRead...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info($"Получение сообщения {id}");
+                    command.CommandText = "UPDATE Messages SET IsRead = 'true' WHERE MessageId = @MessageId";
+                    command.Parameters.AddWithValue("@MessageId", id);
+
+                    command.ExecuteNonQuery();
                 }
             }
         }

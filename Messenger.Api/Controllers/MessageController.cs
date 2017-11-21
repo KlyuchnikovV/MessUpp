@@ -91,8 +91,8 @@ namespace Messenger.Api.Controllers
         }
 
         [HttpGet]
-        [Route("api/message/chat/{id}")]
-        public IEnumerable<Message> GetMessages(Guid id)
+        [Route("api/message/chat/{id}/profile/{profileId}")]
+        public IEnumerable<Message> GetMessages(Guid id, Guid profileId)
         {
             try
             {
@@ -103,6 +103,13 @@ namespace Messenger.Api.Controllers
                         return one.Date.CompareTo(two.Date);
                     }
                 );
+                foreach(var message in list)
+                {
+                    if(!message.IsRead && profileId != message.ProfileId)
+                    {
+                        messagesRepository.UpdateMessageRead(message.MessageId);
+                    }
+                }
                 return list;
             }
             catch (SqlException exception)
@@ -116,11 +123,14 @@ namespace Messenger.Api.Controllers
         }
 
         [HttpGet]
-        [Route("api/message/chat/{chatId}/count")]
-        public int CountMessages(Guid chatId)
+        [Route("api/message/chat/{chatId}/profile/{profileId}/count")]
+        public int CountMessages(Guid chatId, Guid profileId)
         {
             try
-            { 
+            {
+                Profile profile = profilesRepository.GetProfile(profileId);
+                if(!profile.IsOnline || ((DateTime.Now.TimeOfDay - profile.LastQueryDate.TimeOfDay).Minutes >= 1))
+                    profilesRepository.LoginProfile(profileId);
                 return messagesRepository.CountMessages(chatId);
             }
             catch (SqlException exception)

@@ -1,5 +1,4 @@
 var $ = require('jquery');
-
 function OnLoadLogin()
 {
     // Функция переключения состояния боковой панели чатов. //
@@ -62,6 +61,38 @@ function OnLoadLogin()
             }
         }
     );
+
+    var textboxes = document.getElementsByTagName('input');
+
+    document.getElementById('avatarFile').onchange = function (evt) {
+        var tgt = evt.target || window.event.srcElement,
+            files = tgt.files;
+
+        if (FileReader && files && files.length)
+        {
+            var fr = new FileReader();
+            fr.onload = function ()
+            {
+                document.getElementById("avatar").src = fr.result;
+                var close = document.createElement('div');
+                close.setAttribute("src", "./img/close2.png");
+                close.setAttribute("height", "25px");
+                close.setAttribute("width", "25px");
+                close.setAttribute("vspace", "5px");
+                close.setAttribute("hspace", "5px");
+                close.setAttribute("style", "background-color:#ffffff;position:absolute;height:25px;width:25px;left:150px;top:80px;");
+                close.setAttribute("onclick", "DeleteAvatar()");
+                close.setAttribute("class", "divButton");
+                document.getElementById("avatarDiv").appendChild(close);
+            }
+            fr.readAsDataURL(files[0]);
+        }
+        else
+        {
+            PopUp("Не могу загрузить фотографию.", 1, false);
+        }
+    }
+
     PopUp("Добро пожаловать в MessUpp!", 0, true);
     document.getElementById("loginDiv").click();
 }
@@ -81,3 +112,101 @@ function ResetPanels(element)
     }
 }
 
+function NameValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Zа-яА-Я]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function SurnameValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Zа-яА-Я]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function LoginValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Z0-9]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function PassValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Z0-9]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function ValidateAll()
+{
+    NameValidate(document.getElementById("txtName"));
+    if(document.getElementById("registerPassed").value == 'true')
+    {
+        SurnameValidate(document.getElementById("txtSurname"));
+    }
+
+    if(document.getElementById("registerPassed").value == 'true')
+    {
+        LoginValidate(document.getElementById("txtLogin"));
+    }
+
+    if(document.getElementById("registerPassed").value == 'true')
+    {
+        PassValidate(document.getElementById("txtPassword"));
+    }
+
+}
+
+function DeleteAvatar()
+{
+    document.getElementById('avatarDiv').innerHTML = "";
+    document.getElementById('avatarDiv').innerHTML = '<img id="avatar" style="max-height:200px; max-width:150px" src="./img/personWithoutImage.png"/>';
+    document.getElementById('avatarFile').value = "";
+}

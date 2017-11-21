@@ -8,57 +8,12 @@
         <script type="text/javascript" src="js/programActions.js"></script>
         <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
         <link rel="stylesheet" href="./css/mainStyles.css">
-        <style>
-            .inputBox
-            {
-                margin-left: 10px
-            }
-            .textbox,
-            .button
-            {
-                border: 1px solid #CD853F;
-                -moz-border-radius: 10px;
-                -webkit-border-radius: 9px;
-                padding-left: 5px;
-                font-weight: bold;
-            }
-            .button
-            {
-                background-color:#CD853F;
-                color: #000000;
-            }
-            .button:hover,
-            .attachButton:hover
-            {
-                -webkit-filter: invert(100%);
-                filter: invert(100%);
-            }
-            .label
-            {
-                font-size: 400;
-                font-weight: bold;
-            }
-            .attachButton
-            {
-                -moz-border-radius: 10px;
-                -webkit-border-radius: 9px;
-                background-color:#CD853F;
-                width:35px;
-                display:inline-block;
-                position:absolute;
-                left:13px;
-                margin-top:5px;
-            }
-            .attachButton > input
-            {
-                display: none;
-            }
-        </style>
+        <link rel="stylesheet" href="./css/loginStyles.css">
     </head>
     <body onload="OnLoadLogin()" class="body">
         <!-- Панель с кнопками-->
         <div class="cmdPanel">
-            <div class="divButtonLogin" id="loginDiv">
+            <div class="divButtonLogin" id="loginDiv" style="margin-top:5px;">
                 <img class="icon" src="./img/login.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Войти">
             </div>
             <div class="divButtonRegister" id="registerDiv">
@@ -67,78 +22,78 @@
         </div>
         <!-- Боковые панели -->
         <div class="slidePanelWrap">
-            <div class="loginPanel" align="center">
+            <div class="loginPanel" align="center" id="loginPan">
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Вход:</h1></label>
                 </div>
                 <div id="divLogin" class="inputBox">
                     <label class="label" style="color:#ffffff"><br/>Логин:</label>
                     <div>
-                        <input id="txtLogin" class="textbox"  type="textbox" value="Barney" style="width:174px"/>
+                        <input id="txtLog" class="textbox"  type="textbox" value="Barney" style="width:174px"/>
                     </div>
                 </div>
-                <!-- Add regexp for checking password and style in separated file-->
                 <div id="divPassword" class="inputBox">
                     <label class="label" style="color:#ffffff"><br/>Пароль:</label>
                     <div>
-                        <input id="txtPassword" class="textbox"  type="password" value="12345" style="width:174px"/>
+                        <input id="txtPass" class="textbox"  type="password" value="12345" style="width:174px"/>
                     </div>
                     <br/>
                 </div>
                 <div id="divButtons">
-                    <input id="loginButton" class="button" value="Войти" type="button" onclick="Login()"/>
+                    <input id="loginButton" class="button" value="Войти" type="button" onclick="Login();"/>
                     <input id="registerButton" class="button" value="Регистрация" type="button"  onclick="document.getElementById('registerDiv').click();"/>
                 </div>
             </div>
-            <div class="registerPanel" align="center">
+            <div class="registerPanel" align="center" id="registerPan">
                 <form id="formCreate">
                     <div style="color: rgb(64, 64, 179);">
                         <label class="label"><h1>Регистрация</h1></label>
                     </div>
-                    <div>
+                    <div id="avatarDiv">
                         <!-- Create default picture for user -->
                         <img id="avatar" style="max-height:200px; max-width:150px" src="./img/personWithoutImage.png"/>
                     </div>
                     <div id="divName" class="inputBox">
                         <label style="color:#ffffff"><br/>Имя:</label>
                         <div>
-                            <input id="txtName" class="textbox" type="textbox"/>
+                            <input id="txtName" class="textbox" type="textbox" onkeyup="return NameValidate(this);"/>
                         </div>
                     </div>
                     <div id="divSurname" class="inputBox">
                         <label style="color:#ffffff"><br/>Фамилия:</label>
                         <div>
-                            <input id="txtSurname" class="textbox"  type="textbox"/>
+                            <input id="txtSurname" class="textbox"  type="textbox" onkeyup="return SurnameValidate(this);"/>
                         </div>
                     </div>
                     <div id="divLogin" class="inputBox">
                         <label style="color:#ffffff"><br/>Логин:</label>
                         <div>
-                            <input id="txtLogin" class="textbox"  type="textbox"/>
+                            <input id="txtLogin" class="textbox"  type="textbox" onkeyup="return LoginValidate(this);"/>
                         </div>
                     </div>
                     <!-- Add regexp for checking password and style in separated file-->
                     <div id="divPassword" class="inputBox">
                         <label style="color:#ffffff"><br/>Пароль:</label>
                         <div>
-                            <input id="txtPassword" class="textbox"  type="textbox"/><br/>
+                            <input id="txtPassword" class="textbox"  type="textbox" onkeyup="return PassValidate(this);"/><br/>
                         </div>
                     </div>
                     <div class="attachButton" id="attachButton">
                         <label for="avatarFile">
                             <img class="icon" src="./img/attach.png" height="25px" width="25px" vspace="5px" hspace="4px" title="Выбор аватара"/>
                         </label>
-                        <input style="padding-top: 2px" id="avatarFile" type="file" accept=".jpg, .jpeg, .png" />
+                        <input style="padding-top: 2px" id="avatarFile" type="file" accept=".jpg, .jpeg, .png" value="" />
                     </div>
                     <div id="divButtons" style="margin-left:40px">
                         <br/>
-                        <input id="okButton" value="Создать" class="button" type="button" onclick="LoadAvatar();"/>
+                        <input id="okButton" value="Создать" class="button" type="button" onclick="ValidateAll(); LoadAvatar();"/>
                         <input id="cancelButton" value="Войти" class="button" type="button"  onclick="document.getElementById('loginDiv').click();"/>
                     </div>
                 </form>
             </div>
             <input type="hidden" id="loginHidden" value="false"/>
             <input type="hidden" id="registerHidden" value="false"/>
+            <input type="hidden" id="registerPassed" value="false"/>
         </div>
         <!-- Панель всплывающих сообщений -->
         <div class="popUp" id="popUp" style="z-index:99;visibility:hidden; height:40px; width:50vw; position:absolute; left:25vw; top:20px">
@@ -149,45 +104,5 @@
             <label class="label" style="color:#ffffff"><br/><br/><br/><h1>MessUpp</h1></label>
             <img>
         </div>
-        <script>
-			var textboxes = document.getElementsByTagName('input');
-
-            for(var i = 0; i < textboxes.length; i++)
-            {
-                var element = textboxes[i];
-                if(element.type != "text")
-                    continue;
-                if(element.addEventListener)
-                {
-                    element.addEventListener('textInput', TextBoxValidator, false);
-                }
-			}
-
-            // Add checking instead of alerting. //
-            function TextBoxValidator(event)
-            {
-                //alert("Gotcha!");
-			}
-
-            document.getElementById('avatarFile').onchange =
-            function (evt)
-            {
-                var tgt = evt.target || window.event.srcElement,
-                    files = tgt.files;
-
-                if (FileReader && files && files.length)
-                {
-                    var fr = new FileReader();
-                    fr.onload = function () {
-                        document.getElementById("avatar").src = fr.result;
-                    }
-                    fr.readAsDataURL(files[0]);
-                }
-                else
-                {
-                    PopUp("Не могу загрузить фотографию.", 1, false);
-                }
-            }
-        </script>
     </body>
 </html>

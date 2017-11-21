@@ -110,7 +110,7 @@ namespace Messenger.DataLayer.SQL
                 using (var command = connection.CreateCommand())
                 {
                     logger.Info($"Получение профиля с параметрами: ИД = {id}");
-                    command.CommandText = "SELECT TOP(1) Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Id = @Id";
+                    command.CommandText = "SELECT TOP(1) * FROM Profiles WHERE Id = @Id";
                     command.Parameters.AddWithValue("@Id", id);
                     try
                     {
@@ -130,6 +130,8 @@ namespace Messenger.DataLayer.SQL
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
                                 Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
+                                LastQueryDate = reader.GetDateTime(reader.GetOrdinal("LastQueryDate")),
+                                IsOnline = reader.GetBoolean(reader.GetOrdinal("IsOnline"))
                             };
                         }
                     }
@@ -253,8 +255,8 @@ namespace Messenger.DataLayer.SQL
                     {
                     
                         logger.Info($"Поиск пользователя по строке {token}");
-                        command.CommandText = "SELECT Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Login = @Name OR Name = @Name OR Surname = @Name";
-                        command.Parameters.AddWithValue("@Name", token);
+                        command.CommandText = "SELECT * FROM Profiles WHERE Login = @Name OR Name = @Name OR Surname = @Name";
+                        command.Parameters.AddWithValue("@Name", "%" + token + "%");
                         SqlDataReader reader;
                         try
                         {
@@ -275,6 +277,8 @@ namespace Messenger.DataLayer.SQL
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
                                 Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
+                                LastQueryDate = reader.GetDateTime(reader.GetOrdinal("LastQueryDate")),
+                                IsOnline = reader.GetBoolean(reader.GetOrdinal("IsOnline"))
                             };
                             logger.Info($"Возвращен пользователь по строке {token}");
                         }
@@ -285,10 +289,11 @@ namespace Messenger.DataLayer.SQL
         }
 
         // Возвращает профиль с данными логином и паролем, используется для входа. //
-        public Profile GetProfile(string login, string password)
+        public Profile GetProfile(string login, string password, bool isOnline)
         {
             using (var connection = new SqlConnection(connectionString))
             {
+                Profile logined = null;
                 logger.Debug("Получение профиля...");
                 try
                 {
@@ -302,7 +307,7 @@ namespace Messenger.DataLayer.SQL
                 using (var command = connection.CreateCommand())
                 {
                     logger.Info($"Получение пользователя по логину {login} и паролю {password}");
-                    command.CommandText = "SELECT TOP(1) Id, Login, Password, Name, Surname, Avatar FROM Profiles WHERE Login = @Login AND Password = @Password";
+                    command.CommandText = "SELECT TOP(1) * FROM Profiles WHERE Login = @Login AND Password = @Password";
                     command.Parameters.AddWithValue("@Login", login);
                     command.Parameters.AddWithValue("@Password", password);
                     try
@@ -312,7 +317,7 @@ namespace Messenger.DataLayer.SQL
                             if (!reader.Read())
                                 throw new Exception("Пользователь с данными логином и паролем не найден");
 
-                            return new Profile
+                            logined =  new Profile
                             {
                                 Id = reader.GetGuid(reader.GetOrdinal("Id")),
                                 Login = reader.GetString(reader.GetOrdinal("Login")),
@@ -320,6 +325,8 @@ namespace Messenger.DataLayer.SQL
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
                                 Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
+                                LastQueryDate = reader.GetDateTime(reader.GetOrdinal("LastQueryDate")),
+                                IsOnline = reader.GetBoolean(reader.GetOrdinal("IsOnline"))
                             };
                         }
                     }
@@ -328,6 +335,79 @@ namespace Messenger.DataLayer.SQL
                         logger.Error(exception.Message);
                         throw exception;
                     }
+                    LoginProfile(logined.Id);
+                    logined.IsOnline = true;
+                    logined.LastQueryDate = DateTime.Now;
+                    return logined;
+                }
+            }
+        }
+
+        public void LoginProfile(Guid id)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Info("Вход в профиль...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "UPDATE Profiles SET IsOnline = @isOnline, LastQueryDate = @Date where Id = @Id";
+                    command.Parameters.AddWithValue("@isOnline", true);
+                    command.Parameters.AddWithValue("@Date", DateTime.Now);
+                    command.Parameters.AddWithValue("@Id", id);
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        throw exception;
+                    }
+                }
+
+            }
+        }
+
+        public void LogoutProfile(Guid id)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Info("Выход из профиля...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+
+                    command.CommandText = "UPDATE Profiles SET IsOnline = @isOnline, LastQueryDate = @Date where Id = @Id";
+                    command.Parameters.AddWithValue("@isOnline", false);
+                    command.Parameters.AddWithValue("@Date", DateTime.Now);
+                    command.Parameters.AddWithValue("@Id", id);
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        throw exception;
+                    }
+
                 }
             }
         }

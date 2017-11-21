@@ -247,6 +247,17 @@ $(document).ready(function(){
         }
     , 1000);
 
+    setInterval(
+      function()
+      {
+        if(document.getElementById('chatId').value != "")
+        {
+          ChatProfiles();
+          GetMessages(document.getElementById('chatId').value);
+        }
+      }, 30000
+    );
+
     // Инициализируем превью файлов. //
     var inpElem = document.getElementById('file-input'),
         divElem = document.getElementById('preview');
@@ -260,7 +271,7 @@ $(document).ready(function(){
         if ( file.type.match(/image.*/) )
         {
             document.getElementById('messageBox').setAttribute("style",
-            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");
 
             var reader = new FileReader(), img;
             reader.addEventListener("load",
@@ -268,13 +279,13 @@ $(document).ready(function(){
             {
                 img = document.createElement('img');
                 var close = document.createElement('div');
-                close.setAttribute("src", "./img/close.png");
+                close.setAttribute("src", "./img/close2.png");
 				close.setAttribute("height", "25px");
 				close.setAttribute("width", "25px");
 				close.setAttribute("vspace", "5px");
 				close.setAttribute("hspace", "5px");
 				close.setAttribute("style", "background-color:#ffffff;position:absolute;margin-right:5px;margin-left:75px;height:25px;width:25px;top:0px;z-index:90;");
-				//close.setAttribute("onclick", "DeleteChat('" + item.ChatId + "')");
+				close.setAttribute("onclick", "DeleteAttach()");
 				close.setAttribute("class", "divButton");
                 img.setAttribute("style", "top:5px;height:100px;width:100%;display:inline-block");
                 img.setAttribute("id", "previewImage");
@@ -287,7 +298,7 @@ $(document).ready(function(){
         else
         {
             document.getElementById('messageBox').setAttribute("style",
-            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");
 
             var img;
             img = document.createElement('img');
@@ -377,25 +388,54 @@ $(document).ready(function(){
                     break;
                 }
             }
-        } 
+        }
     }
-
-    // Инициализируем автозаполнение. //
-    //var options = {
-    //    data: ["blue", "green", "pink", "red", "yellow"]
-    //};
-    //$("#txtChatName").easyAutocomplete(options);
-    //$("#findString").easyAutocomplete(options);
-    //$("#messageArea").easyAutocomplete(options);
 });
 
 // Вадидация таймера. //
 function TimerValidator(input)
 {
     var value = input.value;
-    var rep = /^\d+$/;
-    if(!rep.test(value))
+    var rep = /^\d+$/;
+    if(!rep.test(value))
     {
-        input.value = "0";
+        input.value = "0";
     }
+}
+
+// Выводит информацию о профиле в раздел настроек. //
+function LoadProfileInfo()
+{
+	var profileId = document.getElementById("profileId").value;
+    var item = GetProfile(profileId);
+    var img = document.getElementById("avatar");
+    document.getElementById("currentName").innerHTML = item.Name;
+    document.getElementById("currentSurname").innerHTML = item.Surname;
+    document.getElementById("currentLogin").innerHTML = item.Login;
+	if(item.Avatar != null)
+	{
+		var attachData = GetAttachData(item.Avatar);
+		img.setAttribute("src", 'data:image/jpeg;base64,' + attachData.Data);
+	}
+	else
+	{
+		img.setAttribute("src", "./img/personWithoutImage.png");
+    }
+}
+
+async function SelfDestroy(timeToUpdate, chatId)
+{
+	setTimeout(
+		function()
+		{
+			GetMessages(chatId);
+		}, timeToUpdate * 1000);
+}
+
+function DeleteAttach()
+{
+    document.getElementById('preview').innerHTML = "";
+    document.getElementById('file-input').value = "";
+    document.getElementById('messageBox').setAttribute("style",
+    "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");
 }
