@@ -1,5 +1,4 @@
 var $ = require('jquery');
-
 function OnLoadLogin()
 {
     // Функция переключения состояния боковой панели чатов. //
@@ -72,7 +71,7 @@ function OnLoadLogin()
         if (FileReader && files && files.length)
         {
             var fr = new FileReader();
-            fr.onload = function () 
+            fr.onload = function ()
             {
                 document.getElementById("avatar").src = fr.result;
                 var close = document.createElement('div');
@@ -127,7 +126,7 @@ function NameValidate(input)
     {
         document.getElementById("registerPassed").value = true;
         input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        
+
     }
 }
 
@@ -145,7 +144,7 @@ function SurnameValidate(input)
     {
         document.getElementById("registerPassed").value = true;
         input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        
+
     }
 }
 
@@ -163,7 +162,7 @@ function LoginValidate(input)
     {
         document.getElementById("registerPassed").value = true;
         input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        
+
     }
 }
 
@@ -181,7 +180,7 @@ function PassValidate(input)
     {
         document.getElementById("registerPassed").value = true;
         input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        
+
     }
 }
 
@@ -192,17 +191,17 @@ function ValidateAll()
     {
         SurnameValidate(document.getElementById("txtSurname"));
     }
-        
+
     if(document.getElementById("registerPassed").value == 'true')
     {
         LoginValidate(document.getElementById("txtLogin"));
     }
-        
+
     if(document.getElementById("registerPassed").value == 'true')
     {
         PassValidate(document.getElementById("txtPassword"));
     }
-        
+
 }
 
 function DeleteAvatar()

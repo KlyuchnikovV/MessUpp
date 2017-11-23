@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /Messenger.Client/MessUpp-win32-ia32
 /Messenger.Client/dist
+/Messenger.Client/app/img/triangles.gif

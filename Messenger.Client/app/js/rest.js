@@ -12,9 +12,11 @@ var attachmentUrl = "http://localhost:49856/api/attach";
 //  Отправляет запрос на создание нового профиля. //
 function CreateUser(id)
 {
+	DisableDiv(document.getElementById("registerPan"));
 	if(document.getElementById("registerPassed").value == 'false')
 	{
 		PopUp("Валидация полей не пройдена.", 1, false);
+		EnableDiv(document.getElementById("registerPan"));
 		return;
 	}
 
@@ -37,26 +39,30 @@ function CreateUser(id)
 	catch(Exception)
 	{
 		PopUp("Ошибка осоздания профиля: нет подключения к серверу", 1, false);
+		EnableDiv(document.getElementById("registerPan"));
 		return;
 	}
-
-	switch(request.status)
+	request.onreadystatechange = function()
 	{
-		case 200:
+		switch(request.status)
 		{
-			PopUp("Профиль успешно создан!", 0, true);
-			break;
+			case 200:
+			{
+				PopUp("Профиль успешно создан!", 0, true);
+				break;
+			}
+			case 409:
+			{
+				PopUp("Ошибка создания профиля: профиль с данным логином уже существует.", 1, false);
+				break;
+			}
+			default:
+			{
+				PopUp("Ошибка создания профиля: " + request.status + ': ' + request.statusText, 1, false);
+			}
 		}
-		case 409:
-		{
-			PopUp("Ошибка создания профиля: профиль с данным логином уже существует.", 1, false);
-			break;
-		}
-		default:
-		{
-			PopUp("Ошибка создания профиля: " + request.status + ': ' + request.statusText, 1, false);
-		}
-	}
+		EnableDiv(document.getElementById("registerPan"));
+	};
 }
 
 // Get method. //
@@ -204,10 +210,11 @@ function GetChats()
 // Отправляет запрос на поиск профиля по логину и паролю. //
 function Login()
 {
-    var login = document.getElementById("txtLogin").value;
-    var password = document.getElementById("txtPassword").value;
+	DisableDiv(document.getElementById("loginPan"));
+  var login = document.getElementById("txtLog").value;
+  var password = document.getElementById("txtPass").value;
 	var request = new XMLHttpRequest();
-	request.open('POST', profileUrl + "/login", false);
+	request.open('POST', profileUrl + "/login", true);
 	var user = '{ "Login" : "' + login + '", "Password" : "' + password + '" }';
 	request.setRequestHeader("Content-type", "application/json");
 	try
@@ -217,29 +224,35 @@ function Login()
 	catch(Exception)
 	{
 		PopUp("Ошибка входа: нет подключения к серверу", 1, false);
+		EnableDiv(document.getElementById("loginPan"));
 		return;
 	}
-	switch(request.status)
+
+	request.onreadystatechange = function()
 	{
-		case 200:
+		switch(request.status)
 		{
-			responseBody = request.responseText;
-			var data = JSON.parse(responseBody);
-			window.location = "main.html?id=" + data.Id;
-			document.getElemehintById("profileId").value = data.Id;
-			break;
+			case 200:
+			{
+				responseBody = request.responseText;
+				var data = JSON.parse(responseBody);
+				EnableDiv(document.getElementById("loginPan"));
+				window.location = "main.html?id=" + data.Id;
+				break;
+			}
+			case 203:
+			{
+				PopUp("Ошибка входа: данная пара логин/пароль не существует.", 1, false);
+				break;
+			}
+			default:
+			{
+				PopUp("Ошибка входа: " + request.status + ': ' + request.statusText, 1, false);
+				break;
+			}
 		}
-		case 203:
-		{
-			PopUp("Ошибка входа: данная пара логин/пароль не существует.", 1, false);
-			break;
-		}
-		default:
-		{
-			PopUp("Ошибка входа: " + request.status + ': ' + request.statusText, 1, false);
-			break;
-		}
-	}
+		EnableDiv(document.getElementById("loginPan"));
+	};
 }
 
 /// Chat methods. ///
@@ -410,7 +423,7 @@ function DeleteChatProfile()
 	}
 	catch(Exception)
 	{
-		PopUp("Ошибка удаления профиля из чата: нет подключения к серверу", 1, false);			
+		PopUp("Ошибка удаления профиля из чата: нет подключения к серверу", 1, false);
 		return;
 	}
 
@@ -476,8 +489,8 @@ function ChatProfiles()
 				wrap.setAttribute("class", "personeNodes");
 				wrap.setAttribute("align", "left");
 				but.setAttribute("onclick", 'Response("' + item.Id + '")');
-				but.setAttribute("style", 
-					"height=25px; width:130px; display:inline-block; margin-left:0px; " + 
+				but.setAttribute("style",
+					"height=25px; width:130px; display:inline-block; margin-left:0px; " +
 					"margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
 				if(item.Avatar != null)
 				{
@@ -501,7 +514,7 @@ function ChatProfiles()
 		}
 		default:
 		{
-			PopUp("Ошибка получения чатов: " + request.status + ': ' + request.statusText, 1, false);			
+			PopUp("Ошибка получения чатов: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
@@ -579,8 +592,8 @@ function GetMessages(chatId)
 
 	var textareaElement = document.getElementById('messageArea')
 	var editor = new Textarea(elementElement);
-	
-	var textcomplete = new Textcomplete(editor, 
+
+	var textcomplete = new Textcomplete(editor,
 		{
 	  dropdown: {
 		maxCount: Infinity
@@ -645,29 +658,29 @@ function GetMessages(chatId)
 				inf.setAttribute("class", "messageInf");
 				if(profileId == profile.Id)
 				{
-					text.setAttribute("style", 
+					text.setAttribute("style",
 						"float:right;display:block;width:95%; margin-bottom:5px; margin-right:5px");
-					inf.setAttribute("style", 
+					inf.setAttribute("style",
 						"float:right;display:block;width:95%; margin-top:5px;  margin-right:5px;color: #4169E1");
-					message.setAttribute("style", 
+					message.setAttribute("style",
 						"float:right;margin-right:2%;display:block; width:50%; background-color: #0D0B15; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");
 				}
 				else
 				{
-					text.setAttribute("style", 
+					text.setAttribute("style",
 						"float:left;display:block;width:95%; margin-bottom:5px; margin-left:5px");
-					inf.setAttribute("style", 
+					inf.setAttribute("style",
 						"float:left;display:block;width:95%; margin-top:5px;  margin-left:5px; color:#FFBE33");
-					message.setAttribute("style", 
-						"float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");					
+					message.setAttribute("style",
+						"float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");
 				}
 				message.appendChild(inf);
 				if(item.Attachment == '00000000-0000-0000-0000-000000000001')
 				{
 					var deleted = document.createElement("div");
 					deleted.innerHTML = "Сообщение удалено."
-					deleted.setAttribute("style", 
-					"padding-left:10px;color:white;float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");					
+					deleted.setAttribute("style",
+					"padding-left:10px;color:white;float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");
 					message.appendChild(deleted);
 				}
 				else
@@ -881,7 +894,7 @@ function Find()
 				wrap.setAttribute("align", "left");
 				but.setAttribute("onclick", 'GetMessages("' + item.ChatId + '")');
 				but.setAttribute("style",
-					"height=25px; width:110px; display:inline-block; margin-left:30px; margin-top:5px; " + 
+					"height=25px; width:110px; display:inline-block; margin-left:30px; margin-top:5px; " +
 					"position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
 
 				button.setAttribute("style", "height=25px; width=25px;right:10px;position:absolute; float:right; background-color:#808080");

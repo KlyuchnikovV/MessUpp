@@ -66,3 +66,22 @@ function getBase64Image(img, width, height)
 	var dataURL = canvas.toDataURL("image/png");
 	return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
+
+function DisableDiv(div)
+{
+    var loader = document.createElement("div");
+    loader.setAttribute("class", "loader");
+    loader.setAttribute("id", "loader");
+    var div2 = document.createElement("div");
+    div2.setAttribute("id", "divLoader");
+    div2.setAttribute("style", "position:absolute; top:0; left:0; width:200px; height:100vh; visibility:visible; opacity: 0.7; background-color:#808080");
+    loader.setAttribute("style", "position:absolute; top:calc(50vh - 25px); left:75px; height:50px; width:50px; visibility:visible");
+    div2.appendChild(loader);
+    div.appendChild(div2);
+}
+
+function EnableDiv(div)
+{
+    document.getElementById("loader").remove();
+    document.getElementById("divLoader").remove();
+}
