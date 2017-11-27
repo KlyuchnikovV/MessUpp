@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Messenger.Model;
 
 namespace Messenger.DataLayer
@@ -16,5 +13,6 @@ namespace Messenger.DataLayer
         int CountMessages(Guid chatId);
         IEnumerable<Message> FindMessages(String[] names, Guid profileId);
         void CheckUndestroyedMessages(Guid id);
+        void UpdateMessageRead(Guid id);
     }
 }

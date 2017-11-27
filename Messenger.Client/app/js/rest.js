@@ -8,11 +8,11 @@ var attachmentUrl = "http://localhost:49856/api/attach";
 
 /// Profile methods. ///
 
-// Post method. //
+// Post method. Async. //
 //  Отправляет запрос на создание нового профиля. //
 function CreateUser(id)
 {
-	DisableDiv(document.getElementById("registerPan"));
+	DisableDiv(document.getElementById("registerPan"), 200, "px", 100, "vh");
 	if(document.getElementById("registerPassed").value == 'false')
 	{
 		PopUp("Валидация полей не пройдена.", 1, false);
@@ -25,7 +25,7 @@ function CreateUser(id)
 	var login = document.getElementById("txtLogin").value;
 	var password = document.getElementById("txtPassword").value;
 	var request = new XMLHttpRequest();
-	request.open('POST', profileUrl, false);
+	request.open('POST', profileUrl, true);
 	var user =
 		'{ "Login" : "' + login + '", "Password" : "' + password + '", "Name" : "' +
 			name + '", "Surname" : "' + surname + '", "Avatar" : "' + id + '" }';
@@ -44,28 +44,31 @@ function CreateUser(id)
 	}
 	request.onreadystatechange = function()
 	{
-		switch(request.status)
+		if(request.readyState == 4)
 		{
-			case 200:
+			switch(request.status)
 			{
-				PopUp("Профиль успешно создан!", 0, true);
-				break;
+				case 200:
+				{
+					PopUp("Профиль успешно создан!", 0, true);
+					break;
+				}
+				case 409:
+				{
+					PopUp("Ошибка создания профиля: профиль с данным логином уже существует.", 1, false);
+					break;
+				}
+				default:
+				{
+					PopUp("Ошибка создания профиля: " + request.status + ': ' + request.statusText, 1, false);
+				}
 			}
-			case 409:
-			{
-				PopUp("Ошибка создания профиля: профиль с данным логином уже существует.", 1, false);
-				break;
-			}
-			default:
-			{
-				PopUp("Ошибка создания профиля: " + request.status + ': ' + request.statusText, 1, false);
-			}
+			EnableDiv(document.getElementById("registerPan"));
 		}
-		EnableDiv(document.getElementById("registerPan"));
 	};
 }
 
-// Get method. //
+// Get method. Sync. //
 // Отправляет запрос на полуение пользователя по ИД. //
 function GetProfile(id)
 {
@@ -81,7 +84,6 @@ function GetProfile(id)
 		PopUp("Ошибка получения профиля: нет подключения к серверу", 1, false);
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
@@ -98,14 +100,15 @@ function GetProfile(id)
 	}
 }
 
-// Delete method. //
+// Delete method. Async. //
 // Отправляет запрос на удаление профиля по ИД. //
 function DeleteProfile()
 {
+	DisableDiv(document.getElementById("settingsPanel"), 200, "px", 100, "vh");
 	var request = new XMLHttpRequest();
 	var id = document.getElementById("profileId").value;
 	var url = profileUrl + "/" + id;
-	request.open('DELETE', url, false);
+	request.open('DELETE', url, true);
 	try
 	{
 		request.send(null);
@@ -113,27 +116,34 @@ function DeleteProfile()
 	catch(Exception)
 	{
 		PopUp("Ошибка удаления профиля: нет подключения к серверу", 1, false);
+		EnableDiv(document.getElementById("settingsPanel"));
 		return;
 	}
-
-	switch(request.status)
+	request.onreadystatechange = function()
 	{
-		case 200:
-		case 204:
+		if(request.readyState == 4)
 		{
-			PopUp("Профиль успешно удален.", 0, true);
-			window.location = "login.html";
-			break;
-		}
-		default:
-		{
-			PopUp("Ошибка удаления профиля: " + request.status + ': ' + request.statusText, 1, false);
-			break;
+			switch(request.status)
+			{
+				case 200:
+				case 204:
+				{
+					PopUp("Профиль успешно удален.", 0, true);
+					window.location = "login.html";
+					break;
+				}
+				default:
+				{
+					PopUp("Ошибка удаления профиля: " + request.status + ': ' + request.statusText, 1, false);
+					break;
+				}
+			}
+			EnableDiv(document.getElementById("settingsPanel"));
 		}
 	}
 }
 
-// Get method. //
+// Get method. Sync. //
 // Отправляет запрос на получение чатов пользователя. //
 function GetChats()
 {
@@ -148,9 +158,9 @@ function GetChats()
 	catch(Exception)
 	{
 		PopUp("Ошибка получения чатов: нет подключения к серверу", 1, false);
+		EnableDiv(document.getElementById("chatsPanel"));
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
@@ -206,11 +216,11 @@ function GetChats()
 	}
 }
 
-// Post method. //
+// Post method. Async. //
 // Отправляет запрос на поиск профиля по логину и паролю. //
 function Login()
 {
-	DisableDiv(document.getElementById("loginPan"));
+	DisableDiv(document.getElementById("loginPan"), 200, "px", 100, "vh");
   var login = document.getElementById("txtLog").value;
   var password = document.getElementById("txtPass").value;
 	var request = new XMLHttpRequest();
@@ -230,41 +240,95 @@ function Login()
 
 	request.onreadystatechange = function()
 	{
-		switch(request.status)
+		if(request.readyState == 4)
 		{
-			case 200:
+			switch(request.status)
 			{
-				responseBody = request.responseText;
-				var data = JSON.parse(responseBody);
-				EnableDiv(document.getElementById("loginPan"));
-				window.location = "main.html?id=" + data.Id;
-				break;
-			}
-			case 203:
-			{
-				PopUp("Ошибка входа: данная пара логин/пароль не существует.", 1, false);
-				break;
-			}
-			default:
-			{
-				PopUp("Ошибка входа: " + request.status + ': ' + request.statusText, 1, false);
-				break;
+				case 200:
+				{
+					responseBody = request.responseText;
+					var data = JSON.parse(responseBody);
+					EnableDiv(document.getElementById("loginPan"));
+					window.location = "main.html?id=" + data.Id;
+					break;
+				}
+				case 203:
+				{
+					PopUp("Ошибка входа: данная пара логин/пароль не существует.", 1, false);
+					EnableDiv(document.getElementById("loginPan"));
+					break;
+				}
+				case 0:
+				{
+					PopUp("Ошибка входа: нет подключения к серверу", 1, false);
+					EnableDiv(document.getElementById("loginPan"));
+					break;
+				}
+				default:
+				{
+					PopUp("Ошибка входа: " + request.status + ': ' + request.statusText, 1, false);
+					EnableDiv(document.getElementById("loginPan"));
+					break;
+				}
 			}
 		}
-		EnableDiv(document.getElementById("loginPan"));
 	};
+}
+
+// Get method. Async. //
+// Отправляет запрос на установку флага "в сети" в значение "не в сети". //
+function Logout()
+{
+	DisableDiv(document.getElementById("logoutPan"), 200, "px", 100, "vh");
+	var id = document.getElementById("profileId").value;
+	var request = new XMLHttpRequest();
+	request.open('GET', profileUrl + "/logout/" + id, true);
+	try
+	{
+		request.send(user);
+	}
+	catch(Exception)
+	{
+		PopUp("Ошибка выхода: нет подключения к серверу", 1, false);
+		EnableDiv(document.getElementById("logoutPan"));
+		return;
+	}
+/*
+	request.onreadystatechange = function()
+	{
+		if(request.readyState == 4)
+		{
+			switch(request.status)
+			{
+				case 200:
+				{
+					responseBody = request.responseText;
+					var data = JSON.parse(responseBody);
+					window.location = "index.html";
+					break;
+				}
+				default:
+				{
+					PopUp("Ошибка выхода: " + request.status + ': ' + request.statusText, 1, false);
+					EnableDiv(document.getElementById("logoutPan"));
+					break;
+				}
+			}
+		}
+	};*/
 }
 
 /// Chat methods. ///
 
-// Post method. //
+// Post method. Async. //
 // Отправляет запрос на создание чата. //
 function CreateChat()
 {
+	DisableDiv(document.getElementById("createPanel"), 200, "px", 100, "vh");
 	var id = document.getElementById('profileId').value;
 	var chatName = document.getElementById("txtChatName").value;
 	var request = new XMLHttpRequest();
-	request.open('POST', chatUrl, false);
+	request.open('POST', chatUrl, true);
 	var chat = '{ "ChatName" : "' + chatName + '", "ChatMembers" : [ { "Id" : "' + id + '" } ] }';
 	request.setRequestHeader("Content-type", "application/json");
 	try
@@ -274,30 +338,38 @@ function CreateChat()
 	catch(Exception)
 	{
 		PopUp("Ошибка создания чата: нет подключения к серверу", 1, false);
+		EnableDiv(document.getElementById("createPanel"));
 		return;
 	}
-	switch(request.status)
+	request.onreadystatechange = function()
 	{
-		case 200:
+		if(request.readyState == 4)
 		{
-			responseBody = request.responseText;
-			var data = JSON.parse(responseBody);
-			GetChats(id);
-			document.getElementById("chatId").value = data.ChatId;
-			document.getElementById("chats").click();
-			GetMessages(data.ChatId);
-			PopUp("Чат создан!", 0, true);
-			break;
-		}
-		default:
-		{
-			PopUp("Ошибка создания чата: " + request.status + ': ' + request.statusText, 1, false);
-			break;
+			switch(request.status)
+			{
+				case 200:
+				{
+					responseBody = request.responseText;
+					var data = JSON.parse(responseBody);
+					GetChats(id);
+					document.getElementById("chatId").value = data.ChatId;
+					document.getElementById("chats").click();
+					GetMessages(data.ChatId);
+					PopUp("Чат создан!", 0, true);
+					break;
+				}
+				default:
+				{
+					PopUp("Ошибка создания чата: " + request.status + ': ' + request.statusText, 1, false);
+					break;
+				}
+			}
+			EnableDiv(document.getElementById("createPanel"));
 		}
 	}
 }
 
-// Get method. //
+// Get method. Sync. //
 // Отправляет запрос на получение чата по ИД. //
 function GetChat(id)
 {
@@ -330,10 +402,11 @@ function GetChat(id)
 	}
 }
 
-// Delete method. //
+// Delete method. Sync. //
 // Отправляет запрос на удаление чата по ИД. //
 function DeleteChat(id)
 {
+	DisableDiv(document.getElementById("chatsPanel"), 200, "px", 100, "vh");
 	var request = new XMLHttpRequest();
 	var url = chatUrl + "/" + id;
 	request.open('DELETE', url, false);
@@ -344,27 +417,29 @@ function DeleteChat(id)
 	catch(Exception)
 	{
 		PopUp("Ошибка удаления чата: нет подключения к серверу", 1, false);
+		EnableDiv(document.getElementById("chatsPanel"));
 		return;
 	}
-
 	switch(request.status)
 	{
 		case 200:
 		case 204:
 		{
 			PopUp("Чат успешно удален.", 0, true);
+			EnableDiv(document.getElementById("chatsPanel"));
 			GetChats();
-			return;
+			break;
 		}
 		default:
 		{
 			PopUp("Ошибка удаления чата: " + request.status + ': ' + request.statusText, 1, false);
+			EnableDiv(document.getElementById("chatsPanel"));
 			break;
 		}
-	}
+	};
 }
 
-// Get method. //
+// Get method. Sync. //
 // Отправляет запрос на добавление выбранного пользователя к текущему чату. //
 function AddToChat(id)
 {
@@ -386,6 +461,7 @@ function AddToChat(id)
 		PopUp("Ошибка добавления к чату: нет подключения к серверу", 1, false);
 		return;
 	}
+
 	switch(request.status)
 	{
 		case 200:
@@ -408,7 +484,7 @@ function AddToChat(id)
 	}
 }
 
-// Delete method. //
+// Delete method. Sync. //
 // Отправляет запрос на удаление пользователя чата по ИД. //
 function DeleteChatProfile()
 {
@@ -452,7 +528,7 @@ function DeleteChatProfile()
 	}
 }
 
-// Get method. //
+// Get method. Sync. //
 // Отправлет запрос на получение профилей состоящих в текущем чате. //
 function ChatProfiles()
 {
@@ -484,11 +560,24 @@ function ChatProfiles()
 				var wrap = document.createElement("div");
 				var but = document.createElement("div");
 				var img = document.createElement("img");
+				var online = document.createElement("img");
 				but.innerHTML = item.Name + " " + item.Surname;
+				//alert(item.IsOnline);
+				if(item.IsOnline)
+				{
+					online.setAttribute("src", "./img/online.png");
+					online.setAttribute("style", "position:absolute;");
+					online.setAttribute("height", "5px");
+					online.setAttribute("width", "5px");
+					online.setAttribute("vspace", "25px");
+					online.setAttribute("hspace", "25px");
+					wrap.appendChild(online);
+				}
+				// Set online/offline image
 				wrap.setAttribute("title", item.Name + " " + item.Surname);
 				wrap.setAttribute("class", "personeNodes");
 				wrap.setAttribute("align", "left");
-				but.setAttribute("onclick", 'Response("' + item.Id + '")');
+				//but.setAttribute("onclick", 'Response("' + item.Id + '")');
 				but.setAttribute("style",
 					"height=25px; width:130px; display:inline-block; margin-left:0px; " +
 					"margin-top:5px; position:absolute;text-overflow: ellipsis;padding: 5px;overflow: hidden;white-space: nowrap;");
@@ -506,6 +595,7 @@ function ChatProfiles()
 				img.setAttribute("width", "25px");
 				img.setAttribute("vspace", "5px");
 				img.setAttribute("hspace", "5px");
+
 				wrap.appendChild(img);
 				wrap.appendChild(but);
 				mainList.appendChild(wrap);
@@ -514,7 +604,7 @@ function ChatProfiles()
 		}
 		default:
 		{
-			PopUp("Ошибка получения чатов: " + request.status + ': ' + request.statusText, 1, false);
+			PopUp("Ошибка получения пользователей: " + request.status + ': ' + request.statusText, 1, false);
 			break;
 		}
 	}
@@ -560,6 +650,7 @@ function SendMessage()
 		PopUp("Ошибка отправки сообщения: нет подключения к серверу", 1, false);
 		return;
 	}
+
 	switch(request.status)
 	{
 		case 200:
@@ -584,37 +675,11 @@ function SendMessage()
 // Отправляет запрос на получение всех сообщений чата. //
 function GetMessages(chatId)
 {
-	/*var Textcomplete = require('../../node_modules/textcomplete/lib/textcomplete');
-	var Textarea = require('../../node_modules/textcomplete/lib/textarea');
-
-	var editor = new Textarea(textareaElement);
-	var textcomplete = new Textcomplete(editor);
-
-	var textareaElement = document.getElementById('messageArea')
-	var editor = new Textarea(elementElement);
-
-	var textcomplete = new Textcomplete(editor,
-		{
-	  dropdown: {
-		maxCount: Infinity
-	  }
-	});
-
-	textcomplete.register([{
-		// Emoji strategy
-		match: /(^|\s):(\w+)$/,
-		search: function (term, callback) {
-		  callback(emojies.filter(emoji => { return emoji.startsWith(term); }));
-		},
-		replace: function (value) {
-		  return '$1:' + value + ': ';
-		}
-	  }]);*/
-
 	document.getElementById("chatId").value = chatId;
+	var profileId = document.getElementById("profileId").value;
 	ChatProfiles();
 	var request = new XMLHttpRequest();
-	var url = messageUrl + "/chat/" + chatId;
+	var url = messageUrl + "/chat/" + chatId + "/profile/" + profileId;
 	request.open('GET', url, false);
 	try
 	{
@@ -630,11 +695,9 @@ function GetMessages(chatId)
 		case 200:
 		{
 			var responseBody = request.responseText;
-			var cache = document.getElementById("cache");
 			var mainList = document.getElementById("dialog");
 			mainList.innerHTML = "";
 			var data = JSON.parse(responseBody);
-			var array;
 			for(var i = 0; i < data.length; i++)
 			{
 				var item = data[i];
@@ -642,14 +705,9 @@ function GetMessages(chatId)
 				var text = document.createElement("div");
 				var message = document.createElement("div");
 				var attach = document.createElement("img");
+				var read = document.createElement("img");
 				var profileId = document.getElementById("profileId").value;
 				var profile = GetProfile(item.ProfileId);
-				//array = item.MessageText.split(/\s*(\W|\D)+\s*/);
-				//for(var j = 0; j < array.length; j++)
-				//{
-				//	if(array[j] != "")
-				//		cache.value += array[j] + "$";
-				//}
 				inf.innerHTML = profile.Name + " " + profile.Surname;
 				if(profile.Login == "")
 					inf.innerHTML += " ( *Профиль удалён* )";
@@ -659,7 +717,7 @@ function GetMessages(chatId)
 				if(profileId == profile.Id)
 				{
 					text.setAttribute("style",
-						"float:right;display:block;width:95%; margin-bottom:5px; margin-right:5px");
+						"float:right;display:block;width:95%; margin-bottom:5px; margin-right:5px;word-wrap: break-word;");
 					inf.setAttribute("style",
 						"float:right;display:block;width:95%; margin-top:5px;  margin-right:5px;color: #4169E1");
 					message.setAttribute("style",
@@ -668,7 +726,7 @@ function GetMessages(chatId)
 				else
 				{
 					text.setAttribute("style",
-						"float:left;display:block;width:95%; margin-bottom:5px; margin-left:5px");
+						"float:left;display:block;width:95%; margin-bottom:5px; margin-left:5px;word-wrap: break-word;");
 					inf.setAttribute("style",
 						"float:left;display:block;width:95%; margin-top:5px;  margin-left:5px; color:#FFBE33");
 					message.setAttribute("style",
@@ -680,7 +738,7 @@ function GetMessages(chatId)
 					var deleted = document.createElement("div");
 					deleted.innerHTML = "Сообщение удалено."
 					deleted.setAttribute("style",
-					"padding-left:10px;color:white;float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");
+						"padding-left:10px;color:white;float:left;margin-left:2%;display:block; width:50%; background-color: #1F1D10; -moz-border-radius: 10px;-webkit-border-radius: 9px; align-content: center; margin-top:10px;");
 					message.appendChild(deleted);
 				}
 				else
@@ -689,15 +747,23 @@ function GetMessages(chatId)
 				{
 					var attachData = GetAttachData(item.Attachment);
 					attach.setAttribute("src", 'data:image/png;base64,' + attachData.Data);
-					attach.setAttribute("height", "200px");
-					attach.setAttribute("width", "200px");
+					attach.setAttribute("class", "image");
 					attach.setAttribute("vspace", "15px");
 					attach.setAttribute("hspace", "25px");
 					message.appendChild(attach);
 				}
+				if(item.IsRead && item.ProfileId == profileId)
+				{
+					read.setAttribute("style","position:absolute;display:block-inline;");
+					read.setAttribute("src", "./img/messageRead.png");
+					read.setAttribute("class", "image");
+					read.setAttribute("height", "12px");
+					read.setAttribute("width", "21px");
+					read.setAttribute("hspace", "10px");
+					read.setAttribute("vspace", "5px");
+					inf.appendChild(read);
+				}
 				mainList.appendChild(message);
-				//var words = item.MessageText.split(" ");
-				//cache.value = cache.value + " " + words[0];
 			}
 			document.getElementById("messageBox").setAttribute("style",
 				"visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");
@@ -726,9 +792,10 @@ function UpdateMessages()
 {
 	var request = new XMLHttpRequest();
 	var chatId = document.getElementById("chatId").value;
+	var profileId = document.getElementById("profileId").value;
 	if(chatId == "")
 		return;
-	var url = messageUrl + "/chat/" + chatId + "/count";
+	var url = messageUrl + "/chat/" + chatId + "/profile/" + profileId + "/count";
 	request.open('GET', url, false);
 	try
 	{

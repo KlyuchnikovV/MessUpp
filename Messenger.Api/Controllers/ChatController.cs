@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Web.Http;
 using Messenger.Model;
@@ -130,7 +131,16 @@ namespace Messenger.Api.Controllers
         {
             try
             {
-                return chatsRepository.GetChatMembers(id);
+                List<Profile> list = chatsRepository.GetChatMembers(id).ToList();
+                foreach(var profile in list)
+                {
+                    if (((DateTime.Now.TimeOfDay - profile.LastQueryDate.TimeOfDay).Minutes >= 2) && profile.IsOnline.Equals(true))
+                    {
+                        profilesRepository.LogoutProfile(profile.Id);
+                        profile.IsOnline = false;
+                    }
+                }
+                return list;
             }
             catch (SqlException exception)
             {

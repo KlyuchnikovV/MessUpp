@@ -105,6 +105,7 @@ namespace Messenger.DataLayer.SQL
                             Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
                             TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
                             Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                            IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead"))
                         };
                     }
                 }
@@ -176,6 +177,7 @@ namespace Messenger.DataLayer.SQL
                                 Date = reader.GetDateTime(reader.GetOrdinal("SendDate")),
                                 TimeToDestroy = reader.GetInt32(reader.GetOrdinal("LifeTime")),
                                 Attachment = reader.GetGuid(reader.GetOrdinal("AttachId")),
+                                IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead"))
                             };
                     }
                 }
@@ -372,6 +374,31 @@ namespace Messenger.DataLayer.SQL
                             }
                         }
                     }
+                }
+            }
+        }
+
+        public void UpdateMessageRead(Guid id)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Установка флага IsRead...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info($"Получение сообщения {id}");
+                    command.CommandText = "UPDATE Messages SET IsRead = 'true' WHERE MessageId = @MessageId";
+                    command.Parameters.AddWithValue("@MessageId", id);
+
+                    command.ExecuteNonQuery();
                 }
             }
         }

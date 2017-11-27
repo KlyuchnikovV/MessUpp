@@ -130,7 +130,7 @@ namespace Messenger.Api.Controllers
         {
             try
             {
-                return profilesRepository.GetProfile(profile.Login, profile.Password);
+                return profilesRepository.GetProfile(profile.Login, profile.Password, true);
             }
             catch(SqlException exception)
             {
@@ -149,6 +149,32 @@ namespace Messenger.Api.Controllers
                 throw new HttpResponseException(response);
             }
         }
-        
+
+        [HttpGet]
+        [Route("api/profile/logout/{id}")]
+        public void Logout(Guid id)
+        {
+            try
+            {
+                profilesRepository.LogoutProfile(id);
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+            catch (Exception exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NonAuthoritativeInformation)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+        }
+
     }
 }

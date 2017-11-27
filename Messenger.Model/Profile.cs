@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Messenger.Model 
 {
@@ -10,5 +11,7 @@ namespace Messenger.Model
         public string Name { get; set; }
         public string Surname { get; set; }
         public Guid Avatar { get; set; }
+        public Boolean IsOnline { get; set; }
+        public DateTime LastQueryDate { get; set; }
     }
 }

@@ -15,5 +15,6 @@ namespace Messenger.Model
         public DateTime Date { get; set; }
         public int TimeToDestroy { get; set; } // in seconds
         public Guid Attachment { get; set; }
+        public Boolean IsRead { get; set; }
     }
 }

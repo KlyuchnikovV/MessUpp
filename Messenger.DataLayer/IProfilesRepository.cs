@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Messenger.Model;
 
 namespace Messenger.DataLayer
@@ -28,6 +25,10 @@ namespace Messenger.DataLayer
         IEnumerable<Profile> FindProfiles(string[] names);
 
         // Возвращает профиль с данными логином и паролем, используется для входа. //
-        Profile GetProfile(string login, string password);
+        Profile GetProfile(string login, string password, bool isOnline);
+
+        void LoginProfile(Guid id);
+
+        void LogoutProfile(Guid id);
     }
 }

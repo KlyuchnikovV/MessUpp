@@ -12,6 +12,20 @@ function PopUp(message, type, isAutoClose)
                 "background:#808080;z-index:99;visibility:visible;color:#0f7702; height:40px; " +
                 "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " +
                 "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
+            if(isAutoClose)
+            {
+                setTimeout( function()
+                {
+                    $("div.popUp").animate({top:'-60px'},500);
+                    setTimeout( function()
+                    {
+                        popUp.setAttribute("style",
+                            "background:#808080;z-index:99;visibility:visible;height:40px; " +
+                            "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " +
+                            "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center;color:#0f7702");
+                    }, 500);
+                }, 5000);
+            }
             break;
         }
         case 1:
@@ -20,6 +34,20 @@ function PopUp(message, type, isAutoClose)
                 "background:#808080;z-index:99;visibility:visible;color:#a30101; height:40px; " +
                 "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " +
                 "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
+            if(isAutoClose)
+            {
+                setTimeout( function()
+                {
+                    $("div.popUp").animate({top:'-60px'},500);
+                    setTimeout( function()
+                    {
+                        popUp.setAttribute("style",
+                            "background:#808080;z-index:99;visibility:visible;height:40px; " +
+                            "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " +
+                            "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center;color:#a30101");
+                    }, 500);
+                }, 5000);
+            }
             break;
         }
     }
@@ -34,20 +62,7 @@ function PopUp(message, type, isAutoClose)
     img.setAttribute("onclick", "ClosePopUp()");
     img.setAttribute("class", "divButton");
     popUp.appendChild(img);
-    if(isAutoClose)
-    {
-        setTimeout( function()
-        {
-            $("div.popUp").animate({top:'-60px'},500);
-            setTimeout( function()
-            {
-                popUp.setAttribute("style",
-                    "background:#808080;z-index:99;visibility:visible;height:40px; " +
-                    "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " +
-                    "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
-            }, 500);
-        }, 5000);
-    }
+    
 }
 
 // Функция закрытия всплывающего сообщения. //
@@ -67,15 +82,18 @@ function getBase64Image(img, width, height)
 	return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
 
-function DisableDiv(div)
+function DisableDiv(div, width, widthType, height, heightType)
 {
     var loader = document.createElement("div");
     loader.setAttribute("class", "loader");
     loader.setAttribute("id", "loader");
+
     var div2 = document.createElement("div");
     div2.setAttribute("id", "divLoader");
-    div2.setAttribute("style", "position:absolute; top:0; left:0; width:200px; height:100vh; visibility:visible; opacity: 0.7; background-color:#808080");
-    loader.setAttribute("style", "position:absolute; top:calc(50vh - 25px); left:75px; height:50px; width:50px; visibility:visible");
+
+    div2.setAttribute("style", "position:absolute; top:0; left:0; width:" + width + widthType + "; height:" + height + heightType + "; visibility:visible; opacity: 0.5; background-color:#555555");
+    loader.setAttribute("style", "position:absolute; top:calc(" + (height/2) + heightType + " - 15px); left:calc(" + (width / 2) + widthType + " - 15px); height:30px; width:30px; visibility:visible");
+
     div2.appendChild(loader);
     div.appendChild(div2);
 }
@@ -84,4 +102,9 @@ function EnableDiv(div)
 {
     document.getElementById("loader").remove();
     document.getElementById("divLoader").remove();
+}
+
+function ResizeImage(img, width, height)
+{
+
 }

@@ -247,6 +247,17 @@ $(document).ready(function(){
         }
     , 1000);
 
+    setInterval(
+      function()
+      {
+        if(document.getElementById('chatId').value != "")
+        {
+          ChatProfiles();
+          GetMessages(document.getElementById('chatId').value);
+        }
+      }, 30000
+    );
+
     // Инициализируем превью файлов. //
     var inpElem = document.getElementById('file-input'),
         divElem = document.getElementById('preview');
@@ -260,7 +271,7 @@ $(document).ready(function(){
         if ( file.type.match(/image.*/) )
         {
             document.getElementById('messageBox').setAttribute("style",
-            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");
 
             var reader = new FileReader(), img;
             reader.addEventListener("load",
@@ -287,7 +298,7 @@ $(document).ready(function(){
         else
         {
             document.getElementById('messageBox').setAttribute("style",
-            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");    
+            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");
 
             var img;
             img = document.createElement('img');
@@ -377,16 +388,8 @@ $(document).ready(function(){
                     break;
                 }
             }
-        } 
+        }
     }
-
-    // Инициализируем автозаполнение. //
-    //var options = {
-    //    data: ["blue", "green", "pink", "red", "yellow"]
-    //};
-    //$("#txtChatName").easyAutocomplete(options);
-    //$("#findString").easyAutocomplete(options);
-    //$("#messageArea").easyAutocomplete(options);
 });
 
 // Вадидация таймера. //
@@ -404,23 +407,11 @@ function TimerValidator(input)
 function LoadProfileInfo()
 {
 	var profileId = document.getElementById("profileId").value;
-
-	var item = GetProfile(profileId);
-	var results = document.getElementById("loginInfo");
-	var wrap = document.createElement("div");
-	var but = document.createElement("label");
-	var button = document.createElement("div");
-	var img = document.createElement("img");
-
-	but.innerHTML = item.Name + " " + item.Surname + "<br/>" + item.Login;
-	but.setAttribute("style", "display:inline-block;left:50px; position:absolute; color:white");
-	wrap.setAttribute("align", "left");
-	wrap.setAttribute("title", item.Name + " " + item.Surname);
-	img.setAttribute("style", "display:inline-block;left:15px; position:absolute");
-	img.setAttribute("height", "25px");
-	img.setAttribute("width", "25px");
-	img.setAttribute("vspace", "5px");
-	img.setAttribute("hspace", "5px");
+    var item = GetProfile(profileId);
+    var img = document.getElementById("avatar");
+    document.getElementById("currentName").innerHTML = item.Name;
+    document.getElementById("currentSurname").innerHTML = item.Surname;
+    document.getElementById("currentLogin").innerHTML = item.Login;
 	if(item.Avatar != null)
 	{
 		var attachData = GetAttachData(item.Avatar);
@@ -429,11 +420,7 @@ function LoadProfileInfo()
 	else
 	{
 		img.setAttribute("src", "./img/personWithoutImage.png");
-	}
-
-	wrap.appendChild(img);
-	wrap.appendChild(but);
-	results.appendChild(wrap);
+    }
 }
 
 async function SelfDestroy(timeToUpdate, chatId)
@@ -450,5 +437,5 @@ function DeleteAttach()
     document.getElementById('preview').innerHTML = "";
     document.getElementById('file-input').value = "";
     document.getElementById('messageBox').setAttribute("style",
-    "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px"); 
+    "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");
 }
