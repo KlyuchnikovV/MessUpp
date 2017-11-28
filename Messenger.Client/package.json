@@ -15,15 +15,12 @@
   "author": "Barney",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^1.7.9",
     "electron-packager": "5.0.0",
     "electron-prebuilt": "^1.4.13"
   },
   "build": {
     "appId": "com.messup.app",
-    "files": [
-      "/icon.*"
-    ]
+    "files": ["/icon.*"]
   },
   "dependencies": {
     "jquery": "3.2.1",
