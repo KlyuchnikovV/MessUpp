@@ -1,65 +1,74 @@
 ﻿using System;
+using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using Messenger.Model;
 using NLog;
-using System.Data.SqlClient;
 
 namespace Messenger.DataLayer.SQL
 {
+    /// <summary>
+    ///     Реализация интерфейса для методов работы с таблицей "Вложения".
+    /// </summary>
+    [SuppressMessage("ReSharper", "InheritdocConsiderUsage")]
     public class AttachmentRepository : IAttachmentRepository
     {
-        private readonly string connectionString;
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly string _connectionString;
 
-        public AttachmentRepository(string _connectionString)
+        /// <summary>
+        ///     Инициализация строки подключения для работы с таблицей "Вложения".
+        /// </summary>
+        /// <param name="connectionString">Строка подключения.</param>
+        public AttachmentRepository(string connectionString)
         {
-            connectionString = _connectionString;
+            _connectionString = connectionString;
         }
 
-        // Загрузка файла в базу данных. //
+        /// <inheritdoc />
         public Attachment LoadAttachment(Attachment file)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                logger.Debug($"Загрузка файла в базу данных...");
+                Logger.Debug("Загрузка файла в базу данных...");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
-                
+
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info($"Проверка на наличие данного файла в базе...");
-                    command.CommandText = "SELECT AttachId FROM Attachments WHERE Data = @Data And Type = @Type";
+                    command.CommandText = "SELECT AttachId FROM Attachments WHERE Data = @Data AND Type = @Type";
                     command.Parameters.AddWithValue("@Data", file.Data);
                     command.Parameters.AddWithValue("@Type", file.Type);
+                    Logger.Info("Проверка на наличие данного файла в базе...");
                     try
                     {
                         command.ExecuteNonQuery();
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
 
                     using (var reader = command.ExecuteReader())
                     {
-                        // Если что-то есть то он прочитает и вернет. // 
-                        if(reader.Read())
+                        if (reader.Read())
                             return new Attachment
                             {
                                 AttachId = reader.GetGuid(reader.GetOrdinal("AttachId")),
                                 Data = file.Data
                             };
                     }
-                    logger.Info($"Файла нет в базе, создаем новый...");
+                    Logger.Info("Файла нет в базе, создаем новый...");
                     file.AttachId = Guid.NewGuid();
-                    command.CommandText = "INSERT INTO Attachments (AttachId, Data, Type) VALUES (@AttachId, @Data, @Type)";
+                    command.CommandText =
+                        "INSERT INTO Attachments (AttachId, Data, Type) VALUES (@AttachId, @Data, @Type)";
                     command.Parameters.AddWithValue("@AttachId", file.AttachId);
                     try
                     {
@@ -67,40 +76,39 @@ namespace Messenger.DataLayer.SQL
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
-                    logger.Info($"Готово ИД файла {file.AttachId}.");
+                    Logger.Info($"Готово ИД файла {file.AttachId}.");
                     return file;
                 }
-
             }
         }
 
-        // Получение файла по ИД. // 
+        /// <inheritdoc />
         public Attachment GetAttachment(Guid id)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                logger.Debug($"Поиск файла...");
+                Logger.Debug("Поиск файла...");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
 
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info($"Поиск файла с ИД {id}...");
                     command.CommandText = "SELECT Data FROM Attachments WHERE AttachId = @AttachId";
                     command.Parameters.AddWithValue("@AttachId", id);
+                    Logger.Info($"Поиск файла с ИД {id}...");
                     try
                     {
-                        string data = command.ExecuteScalar() as string;
+                        var data = command.ExecuteScalar() as string;
                         return new Attachment
                         {
                             AttachId = id,
@@ -109,46 +117,46 @@ namespace Messenger.DataLayer.SQL
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
                 }
             }
         }
 
-        // Удаление файла по ИД. //
+        /// <inheritdoc />
         public void DeleteAttachment(Guid id)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                logger.Debug($"Поиск файла...");
+                Logger.Debug("Поиск файла...");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
 
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info($"Удаление файла с ИД {id}...");
                     command.CommandText = "DELETE FROM Attachments WHERE AttachId = @AttachId";
                     command.Parameters.AddWithValue("@AttachId", id);
+                    Logger.Info($"Удаление файла с ИД {id}...");
                     try
                     {
                         command.ExecuteNonQuery();
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
-                    logger.Info($"Файл с ИД {id} удален.");
+                    Logger.Info($"Файл с ИД {id} удален.");
                 }
             }
-        }  
+        }
     }
 }

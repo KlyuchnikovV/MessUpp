@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Messenger.Constants
+﻿namespace Messenger.Constants
 {
     public static class Constants
     {

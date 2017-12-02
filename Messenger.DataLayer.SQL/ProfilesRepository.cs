@@ -1,65 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Messenger.Model;
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
+using Messenger.Model;
 using NLog;
 
 namespace Messenger.DataLayer.SQL
 {
+    /// <summary>
+    ///     Реализация интерфейса для методов работы с таблицей "Профили".
+    /// </summary>
+    [SuppressMessage("ReSharper", "InheritdocConsiderUsage")]
     public class ProfilesRepository : IProfilesRepository
     {
-        private readonly string connectionString;
-        private readonly IChatsRepository chatsRepository;
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly IChatsRepository _chatsRepository;
+        private readonly string _connectionString;
 
-        public ProfilesRepository(string _connectionString)
+        /// <summary>
+        ///     Инициализация строки подключения для работы с таблицей "Профили".
+        /// </summary>
+        /// <param name="connectionString">Строка подключения.</param>
+        public ProfilesRepository(string connectionString)
         {
-            connectionString = _connectionString;
-            chatsRepository = new ChatsRepository(_connectionString, this);
+            _connectionString = connectionString;
+            _chatsRepository = new ChatsRepository(connectionString, this);
         }
 
-        // Создание нового профиля. //
+        /// <inheritdoc />
         public Profile CreateProfile(Profile newProfile)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                logger.Debug("Создание пользователя...");
+                Logger.Debug("Создание пользователя...");
                 try
                 {
                     connection.Open();
                 }
-                catch(SqlException exception)
+                catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
 
-                logger.Info($"Проверка логина {newProfile.Login}...");
-
+                Logger.Info($"Проверка наличия в БД логина {newProfile.Login}...");
                 using (var command = connection.CreateCommand())
                 {
-                    List<Profile> profiles = FindProfiles( new string[] { newProfile.Login } ).ToList();
-                    foreach(var profile in profiles)
+                    var profile = GetByLogin(newProfile.Login);
+                    if (profile != null)
                     {
-                        if(profile.Login.Equals(newProfile.Login))
+                        if (profile.Login.Equals(newProfile.Login))
                         {
-                            logger.Error("Профиль с таким логином уже существует.");
+                            Logger.Error("Профиль с таким логином уже существует.");
                             throw new Exception();
                         }
-                            
-                    }
-                    if(newProfile.Id.Equals(Guid.Empty))
-                    {
-                        newProfile.Id = Guid.NewGuid();
-                        logger.Info($"Создание нового ИД для пользователя...");
+                        if (newProfile.Id.Equals(Guid.Empty))
+                        {
+                            newProfile.Id = Guid.NewGuid();
+                            Logger.Info($"Создание нового ИД для пользователя...");
+                        }
                     }
 
                     newProfile.LastQueryDate = DateTime.Now;
                     newProfile.IsOnline = false;
-                    
+
                     command.CommandText =
-                        "INSERT INTO Profiles (Id, Login, Password, Name, Surname, Avatar, IsOnline, LastQueryDate) values (@Id, @Login, @Password, @Name, @Surname, @Avatar, @IsOnline, @LastQueryDate)";
+                        "INSERT INTO Profiles (Id, Login, Password, Name, Surname, Avatar, IsOnline, LastQueryDate)" +
+                        "VALUES (@Id, @Login, @Password, @Name, @Surname, @Avatar, @IsOnline, @LastQueryDate)";
                     command.Parameters.AddWithValue("@Id", newProfile.Id);
                     command.Parameters.AddWithValue("@Login", newProfile.Login);
                     command.Parameters.AddWithValue("@Password", newProfile.Password);
@@ -68,138 +75,131 @@ namespace Messenger.DataLayer.SQL
                     command.Parameters.AddWithValue("@Avatar", newProfile.Avatar);
                     command.Parameters.AddWithValue("@IsOnline", "0");
                     command.Parameters.AddWithValue("@LastQueryDate", DateTime.Now);
-
-                    logger.Info(
-                        "Попытка создания нового профиля с параметрами: ИД = {0}, Логин = {1}, Пароль = {2}, Имя = {3}, Фамилия = {4}, Аватар = {5}.",
-                        newProfile.Id, newProfile.Login, newProfile.Password, newProfile.Name, newProfile.Surname, newProfile.Avatar);
-
+                    Logger.Info("Попытка создания нового профиля...");
                     try
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch(SqlException exception)
+                    catch (SqlException exception)
                     {
-                        logger.Error($"Неверный аргумент передан, {exception.Message}");
-                        throw exception;
+                        Logger.Error($"Неверный аргумент передан, {exception.Message}");
+                        throw;
                     }
-                    logger.Info($"Профиль с логином {newProfile.Login} создан.");
+                    Logger.Info($"Профиль с логином {newProfile.Login} создан.");
                     return newProfile;
                 }
             }
         }
 
-        // Переписывает информацию о пользователе. //
+        /// <inheritdoc />
         public Profile ChangeProfileData(Profile newData)
         {
-            logger.Debug($"Изменение данных о пользователе с ИД { newData.Id }.");
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
+                Logger.Debug($"Изменение данных о пользователе с ИД {newData.Id}.");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info("Обновление данных профиля.");
-                    command.CommandText = "Update Profiles SET Login = @Login, Password = @Password, Name = @Name, Surname = @Surname WHERE Id = @ProfileId";
+                    command.CommandText = "Update Profiles SET Login = @Login, Password = @Password, Name = @Name," +
+                                          " Surname = @Surname WHERE Id = @ProfileId";
                     command.Parameters.AddWithValue("@ProfileId", newData.Id);
                     command.Parameters.AddWithValue("@Login", newData.Login);
                     command.Parameters.AddWithValue("@Password", newData.Password);
                     command.Parameters.AddWithValue("@Name", newData.Name);
                     command.Parameters.AddWithValue("@Surname", newData.Surname);
+                    Logger.Info("Обновление данных профиля...");
                     try
                     {
                         command.ExecuteNonQuery();
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
                 }
             }
             return newData;
-
-
         }
 
-        // Возвращает профиль пользователя с данным ИД. // 
+        /// <inheritdoc />
         public Profile GetProfile(Guid id)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                logger.Debug("Получение профиля...");
+                Logger.Debug("Получение профиля...");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info($"Получение профиля с параметрами: ИД = {id}");
-                    command.CommandText = "SELECT TOP(1) * FROM Profiles WHERE Id = @Id";
+                    command.CommandText = "SELECT * FROM Profiles WHERE Id = @Id";
                     command.Parameters.AddWithValue("@Id", id);
+                    Logger.Info($"Получение профиля с параметрами: ИД = {id}...");
                     try
                     {
                         using (var reader = command.ExecuteReader())
                         {
-                            if (!reader.Read())
-                            {
-                                logger.Error($"Пользователь с id {id} не найден");
-                                return null;
-                            }
-
-                            return new Profile
-                            {
-                                Id = reader.GetGuid(reader.GetOrdinal("Id")),
-                                Login = reader.GetString(reader.GetOrdinal("Login")),
-                                Password = 0.ToString(),//reader.GetString(reader.GetOrdinal("Password")), // Не обязателдь передавать пароль. //
-                                Name = reader.GetString(reader.GetOrdinal("Name")),
-                                Surname = reader.GetString(reader.GetOrdinal("Surname")),
-                                Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
-                                LastQueryDate = reader.GetDateTime(reader.GetOrdinal("LastQueryDate")),
-                                IsOnline = reader.GetBoolean(reader.GetOrdinal("IsOnline"))
-                            };
+                            if (reader.Read())
+                                return new Profile
+                                {
+                                    Id = reader.GetGuid(reader.GetOrdinal("Id")),
+                                    Login = reader.GetString(reader.GetOrdinal("Login")),
+                                    Password = 0.ToString(),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    Surname = reader.GetString(reader.GetOrdinal("Surname")),
+                                    Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
+                                    LastQueryDate = reader.GetDateTime(reader.GetOrdinal("LastQueryDate")),
+                                    IsOnline = reader.GetBoolean(reader.GetOrdinal("IsOnline"))
+                                };
+                            Logger.Error($"Пользователь с id {id} не найден");
+                            return null;
                         }
                     }
-                    catch(SqlException exception)
+                    catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
                 }
             }
         }
 
-        //  Удаляет профиль пользователя с данным ИД. //
+        /// <inheritdoc />
         public void DeleteProfile(Guid id)
         {
-            logger.Debug("Удаление пользователя.");
-            using (var connection = new SqlConnection(connectionString))
+            Logger.Debug("Удаление пользователя.");
+            using (var connection = new SqlConnection(_connectionString))
             {
-                logger.Info($"Удаление пользователя с id {id}");
+                Logger.Info($"Удаление пользователя с id {id}");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
+                /*
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info("Удаление пользователя из чатов.");
                     command.CommandText = "DELETE FROM ChatMembers WHERE ProfileId = @Id";
+                    logger.Info("Удаление пользователя из чатов.");
                     command.Parameters.AddWithValue("@Id", id);
                     try
                     {
@@ -210,48 +210,51 @@ namespace Messenger.DataLayer.SQL
                         logger.Error(exception.Message);
                         throw exception;
                     }
-                }
+                }*/
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info("Удаление пользователя из профилей.");
-                    command.CommandText = "Update Profiles SET Login = @Login, Password = @Password WHERE Id = @ProfileId";
+                    command.CommandText =
+                        "UPDATE Profiles SET Login = @Login, Password = @Password WHERE Id = @ProfileId";
                     command.Parameters.AddWithValue("@ProfileId", id);
                     command.Parameters.AddWithValue("@Login", "");
                     command.Parameters.AddWithValue("@Password", "");
+                    Logger.Info("Удаление пользователя из профилей...");
                     try
                     {
                         command.ExecuteNonQuery();
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
                 }
-                logger.Info($"Профиль удален.");
+                Logger.Info($"Профиль удален.");
             }
         }
 
-        // Возвращает коллекцию чатов, в которых состоит пользователь с данным ИД. //
+        /// <inheritdoc />
         public IEnumerable<Chat> GetProfileChats(Guid id)
         {
-            logger.Debug("Получение пользовательских чатов.");
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
+                Logger.Debug("Получение пользовательских чатов.");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info("Получение чатов пользователя с id {0}", id);
-                    command.CommandText = "SELECT chat.* FROM Chats chat JOIN ChatMembers member ON chat.ChatId = member.ChatId WHERE member.ProfileId = @Id";
+                    command.CommandText =
+                        "SELECT chat.* FROM Chats chat JOIN ChatMembers member ON chat.ChatId = member.ChatId " +
+                        "WHERE member.ProfileId = @Id";
                     command.Parameters.AddWithValue("@Id", id);
+                    Logger.Info($"Получение чатов пользователя с ИД {id}...");
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -261,47 +264,46 @@ namespace Messenger.DataLayer.SQL
                             {
                                 ChatId = chatId,
                                 ChatName = reader.GetString(reader.GetOrdinal("ChatName")),
-                                ChatMembers = chatsRepository.GetChatMembers(chatId)
+                                ChatMembers = _chatsRepository.GetChatMembers(chatId)
                             };
                         }
                     }
                 }
             }
-            logger.Info($"Чаты переданы.");
+            Logger.Info($"Чаты переданы.");
         }
 
-        // Возвращает коллекцию профилей с данными именем, фамилией или логином. //
-        public IEnumerable<Profile> FindProfiles(string[] tokens)
+        /// <inheritdoc />
+        public IEnumerable<Profile> FindProfiles(IEnumerable<string> tokens)
         {
-            logger.Debug("Поиск профилей.");
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
+                Logger.Debug("Поиск профилей.");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
                 foreach (var token in tokens)
-                {
                     using (var command = connection.CreateCommand())
                     {
-                    
-                        logger.Info($"Поиск пользователя по строке {token}");
-                        command.CommandText = "SELECT * FROM Profiles WHERE Login Like @Name OR Name Like @Name OR Surname Like @Name";
+                        command.CommandText =
+                            "SELECT * FROM Profiles WHERE Login Like @Name OR Name Like @Name OR Surname Like @Name";
                         command.Parameters.AddWithValue("@Name", "%" + token + "%");
+                        Logger.Info($"Поиск пользователя по строке {token}...");
                         SqlDataReader reader;
                         try
                         {
                             reader = command.ExecuteReader();
                         }
-                        catch(SqlException exception)
+                        catch (SqlException exception)
                         {
-                            logger.Error(exception.Message);
-                            throw exception;
+                            Logger.Error(exception.Message);
+                            throw;
                         }
                         while (reader.Read())
                         {
@@ -316,36 +318,35 @@ namespace Messenger.DataLayer.SQL
                                 LastQueryDate = reader.GetDateTime(reader.GetOrdinal("LastQueryDate")),
                                 IsOnline = reader.GetBoolean(reader.GetOrdinal("IsOnline"))
                             };
-                            logger.Info($"Возвращен пользователь по строке {token}");
+                            Logger.Info($"Возвращен пользователь по строке {token}");
                         }
                         reader.Close();
                     }
-                }
             }
         }
 
-        // Возвращает профиль с данными логином и паролем, используется для входа. //
+        /// <inheritdoc />
         public Profile GetProfile(string login, string password, bool isOnline)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                Profile logined = null;
-                logger.Debug("Получение профиля...");
+                Logger.Debug("Получение профиля...");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info($"Получение пользователя по логину {login} и паролю {password}");
-                    command.CommandText = "SELECT TOP(1) * FROM Profiles WHERE Login = @Login AND Password = @Password";
+                    command.CommandText = "SELECT * FROM Profiles WHERE Login = @Login AND Password = @Password";
                     command.Parameters.AddWithValue("@Login", login);
                     command.Parameters.AddWithValue("@Password", password);
+                    Logger.Info($"Получение пользователя по логину {login} и паролю {password}...");
+                    Profile logined;
                     try
                     {
                         using (var reader = command.ExecuteReader())
@@ -353,11 +354,11 @@ namespace Messenger.DataLayer.SQL
                             if (!reader.Read())
                                 throw new Exception("Пользователь с данными логином и паролем не найден");
 
-                            logined =  new Profile
+                            logined = new Profile
                             {
                                 Id = reader.GetGuid(reader.GetOrdinal("Id")),
                                 Login = reader.GetString(reader.GetOrdinal("Login")),
-                                Password = reader.GetString(reader.GetOrdinal("Password")),
+                                Password = 0.ToString(),
                                 Name = reader.GetString(reader.GetOrdinal("Name")),
                                 Surname = reader.GetString(reader.GetOrdinal("Surname")),
                                 Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
@@ -368,8 +369,8 @@ namespace Messenger.DataLayer.SQL
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
                     LoginProfile(logined.Id);
                     logined.IsOnline = true;
@@ -379,34 +380,105 @@ namespace Messenger.DataLayer.SQL
             }
         }
 
-        public Profile GetByLogin(string login)
+        /// <inheritdoc />
+        public void LoginProfile(Guid id)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                Profile logined = null;
-                logger.Debug("Получение профиля...");
+                Logger.Info("Вход в профиль...");
                 try
                 {
                     connection.Open();
                 }
                 catch (SqlException exception)
                 {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    throw exception;
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
                 }
                 using (var command = connection.CreateCommand())
                 {
-                    logger.Info($"Получение пользователя по логину {login}");
-                    command.CommandText = "SELECT TOP(1) * FROM Profiles WHERE Login = @Login";
+                    command.CommandText =
+                        "UPDATE Profiles SET IsOnline = @isOnline, LastQueryDate = @Date where Id = @Id";
+                    command.Parameters.AddWithValue("@isOnline", true);
+                    command.Parameters.AddWithValue("@Date", DateTime.Now);
+                    command.Parameters.AddWithValue("@Id", id);
+                    Logger.Info("Устанавливаем флаг \"в сети\" и дату последнего запроса.");
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        Logger.Error(exception.Message);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public void LogoutProfile(Guid id)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                Logger.Info("Выход из профиля...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText =
+                        "UPDATE Profiles SET IsOnline = @isOnline, LastQueryDate = @Date where Id = @Id";
+                    command.Parameters.AddWithValue("@isOnline", false);
+                    command.Parameters.AddWithValue("@Date", DateTime.Now);
+                    command.Parameters.AddWithValue("@Id", id);
+                    Logger.Info("Сбрасываем флаг \"в сети\" и устанавливаем дату последнего запроса.");
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        Logger.Error(exception.Message);
+                        throw;
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public Profile GetByLogin(string login)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                Logger.Debug("Получение профиля...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    Logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT * FROM Profiles WHERE Login = @Login";
                     command.Parameters.AddWithValue("@Login", login);
+                    Logger.Info($"Получение пользователя по логину {login}");
+                    Profile logined;
                     try
                     {
                         using (var reader = command.ExecuteReader())
                         {
                             if (!reader.Read())
                                 return null;
-                            //    throw new Exception("Пользователь с данными логином и паролем не найден");
-
                             logined = new Profile
                             {
                                 Id = reader.GetGuid(reader.GetOrdinal("Id")),
@@ -422,82 +494,13 @@ namespace Messenger.DataLayer.SQL
                     }
                     catch (SqlException exception)
                     {
-                        logger.Error(exception.Message);
-                        throw exception;
+                        Logger.Error(exception.Message);
+                        throw;
                     }
                     LoginProfile(logined.Id);
                     logined.IsOnline = true;
                     logined.LastQueryDate = DateTime.Now;
                     return logined;
-                }
-            }
-        }
-
-        public void LoginProfile(Guid id)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                logger.Info("Вход в профиль...");
-                try
-                {
-                    connection.Open();
-                }
-                catch (SqlException exception)
-                {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    throw exception;
-                }
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = "UPDATE Profiles SET IsOnline = @isOnline, LastQueryDate = @Date where Id = @Id";
-                    command.Parameters.AddWithValue("@isOnline", true);
-                    command.Parameters.AddWithValue("@Date", DateTime.Now);
-                    command.Parameters.AddWithValue("@Id", id);
-                    try
-                    {
-                        command.ExecuteNonQuery();
-                    }
-                    catch (SqlException exception)
-                    {
-                        logger.Error(exception.Message);
-                        throw exception;
-                    }
-                }
-
-            }
-        }
-
-        public void LogoutProfile(Guid id)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                logger.Info("Выход из профиля...");
-                try
-                {
-                    connection.Open();
-                }
-                catch (SqlException exception)
-                {
-                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
-                    throw exception;
-                }
-                using (var command = connection.CreateCommand())
-                {
-
-                    command.CommandText = "UPDATE Profiles SET IsOnline = @isOnline, LastQueryDate = @Date where Id = @Id";
-                    command.Parameters.AddWithValue("@isOnline", false);
-                    command.Parameters.AddWithValue("@Date", DateTime.Now);
-                    command.Parameters.AddWithValue("@Id", id);
-                    try
-                    {
-                        command.ExecuteNonQuery();
-                    }
-                    catch (SqlException exception)
-                    {
-                        logger.Error(exception.Message);
-                        throw exception;
-                    }
-
                 }
             }
         }

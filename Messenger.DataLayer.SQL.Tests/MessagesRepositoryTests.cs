@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics.CodeAnalysis;
 using Messenger.Model;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Messenger.DataLayer.SQL.Tests
 {
     [TestClass]
     public class MessagesRepositoryTests
     {
-        private const string ConnectionString = @"Data Source = ACER;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";
-
-        private readonly List<Guid> tempUsers = new List<Guid>();
-        private readonly List<Guid> chats = new List<Guid>();
-        private readonly List<Guid> messages = new List<Guid>();
+        private readonly List<Guid> _chats = new List<Guid>();
+        private readonly List<Guid> _messages = new List<Guid>();
+        private readonly List<Guid> _tempUsers = new List<Guid>();
 
         [TestMethod]
         public void ShouldSendMessage()
@@ -25,33 +19,33 @@ namespace Messenger.DataLayer.SQL.Tests
             var profile = new Profile
             {
                 Id = Guid.NewGuid(),
-                Login = "Admin",
+                Login = "odmin",
                 Avatar = Guid.NewGuid(),
                 Password = "12345",
-                Name = "admin",
-                Surname = "admin"
+                Name = "odmin",
+                Surname = "odmin"
             };
 
             const string chatName = "SendChat";
 
-            var usersRepository = new ProfilesRepository(ConnectionString);
+            var usersRepository = new ProfilesRepository(Constants.Constants.ConnectionString);
             var result = usersRepository.CreateProfile(profile);
 
-            tempUsers.Add(result.Id);
+            _tempUsers.Add(result.Id);
 
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chatRepository = new ChatsRepository(Constants.Constants.ConnectionString, usersRepository);
 
             var chatBefore = new Chat
             {
                 ChatId = Guid.NewGuid(),
                 ChatName = chatName,
-                ChatMembers = new List<Profile>((new Profile[] { profile })),
+                ChatMembers = new List<Guid>(new[] {profile.Id})
             };
 
             var chat = chatRepository.CreateChat(chatBefore);
-            chats.Add(chat.ChatId);
+            _chats.Add(chat.ChatId);
 
-            var messageRepository = new MessagesRepository(ConnectionString);
+            var messageRepository = new MessagesRepository(Constants.Constants.ConnectionString);
 
             var message = new Message
             {
@@ -63,9 +57,9 @@ namespace Messenger.DataLayer.SQL.Tests
                 TimeToDestroy = 0,
                 Attachment = Guid.Empty
             };
-            messages.Add(message.MessageId);
+            _messages.Add(message.MessageId);
 
-            var resultMessage = messageRepository.SendMessage(message);
+            var resultMessage = messageRepository.CreateMessage(message);
 
             Assert.AreEqual(message.MessageId, resultMessage.MessageId);
             Assert.AreEqual(message.ProfileId, resultMessage.ProfileId);
@@ -74,7 +68,6 @@ namespace Messenger.DataLayer.SQL.Tests
             Assert.AreEqual(message.Date, resultMessage.Date);
             Assert.AreEqual(message.TimeToDestroy, resultMessage.TimeToDestroy);
             Assert.AreEqual(message.Attachment, resultMessage.Attachment);
-
         }
 
         [TestMethod]
@@ -83,34 +76,34 @@ namespace Messenger.DataLayer.SQL.Tests
             var profile = new Profile
             {
                 Id = Guid.NewGuid(),
-                Login = "Admin",
+                Login = "odmin",
                 Avatar = Guid.NewGuid(),
                 Password = "12345",
-                Name = "admin",
-                Surname = "admin"
+                Name = "odmin",
+                Surname = "odmin"
             };
 
             const string chatName = "SendChat";
 
-            var usersRepository = new ProfilesRepository(ConnectionString);
+            var usersRepository = new ProfilesRepository(Constants.Constants.ConnectionString);
             var result = usersRepository.CreateProfile(profile);
 
-            tempUsers.Add(result.Id);
+            _tempUsers.Add(result.Id);
 
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chatRepository = new ChatsRepository(Constants.Constants.ConnectionString, usersRepository);
 
             var chatBefore = new Chat
             {
                 ChatId = Guid.NewGuid(),
                 ChatName = chatName,
-                ChatMembers = new List<Profile>((new Profile[] { profile })),
+                ChatMembers = new List<Guid>(new[] {profile.Id})
             };
 
             var chat = chatRepository.CreateChat(chatBefore);
 
-            chats.Add(chat.ChatId);
+            _chats.Add(chat.ChatId);
 
-            var messageRepository = new MessagesRepository(ConnectionString);
+            var messageRepository = new MessagesRepository(Constants.Constants.ConnectionString);
 
             var message = new Message
             {
@@ -122,9 +115,9 @@ namespace Messenger.DataLayer.SQL.Tests
                 TimeToDestroy = 0,
                 Attachment = Guid.Empty
             };
-            messages.Add(message.MessageId);
+            _messages.Add(message.MessageId);
 
-            messageRepository.SendMessage(message);
+            messageRepository.CreateMessage(message);
 
             var resultMessage = messageRepository.GetMessage(message.MessageId);
 
@@ -138,39 +131,40 @@ namespace Messenger.DataLayer.SQL.Tests
         }
 
         [TestMethod]
+        [SuppressMessage("ReSharper", "EmptyGeneralCatchClause")]
         public void ShouldDeleteMessage()
         {
             var profile = new Profile
             {
                 Id = Guid.NewGuid(),
-                Login = "Admin",
+                Login = "odmin",
                 Avatar = Guid.NewGuid(),
                 Password = "12345",
-                Name = "admin",
-                Surname = "admin"
+                Name = "odmin",
+                Surname = "odmin"
             };
 
             const string chatName = "SendChat";
 
-            var usersRepository = new ProfilesRepository(ConnectionString);
+            var usersRepository = new ProfilesRepository(Constants.Constants.ConnectionString);
             var result = usersRepository.CreateProfile(profile);
 
-            tempUsers.Add(result.Id);
+            _tempUsers.Add(result.Id);
 
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chatRepository = new ChatsRepository(Constants.Constants.ConnectionString, usersRepository);
 
             var chatBefore = new Chat
             {
                 ChatId = Guid.NewGuid(),
                 ChatName = chatName,
-                ChatMembers = new List<Profile>((new Profile[] { profile })),
+                ChatMembers = new List<Guid>(new[] {profile.Id})
             };
 
             var chat = chatRepository.CreateChat(chatBefore);
 
-            chats.Add(chat.ChatId);
+            _chats.Add(chat.ChatId);
 
-            var messageRepository = new MessagesRepository(ConnectionString);
+            var messageRepository = new MessagesRepository(Constants.Constants.ConnectionString);
 
             var message = new Message
             {
@@ -182,17 +176,17 @@ namespace Messenger.DataLayer.SQL.Tests
                 TimeToDestroy = 0,
                 Attachment = Guid.Empty
             };
-            messages.Add(message.MessageId);
+            _messages.Add(message.MessageId);
 
-            var resultMessage = messageRepository.SendMessage(message);
+            messageRepository.CreateMessage(message);
 
             messageRepository.DeleteMessage(message.MessageId);
 
             try
             {
-                resultMessage = messageRepository.GetMessage(message.MessageId);
+                messageRepository.GetMessage(message.MessageId);
             }
-            catch (System.ArgumentException)
+            catch (Exception)
             {
                 return;
             }
@@ -201,14 +195,14 @@ namespace Messenger.DataLayer.SQL.Tests
         [TestCleanup]
         public void Clean()
         {
-            foreach (var login in tempUsers)
+            foreach (var login in _tempUsers)
             {
-                var user = new ProfilesRepository(ConnectionString);
-                foreach (var chat in chats)
+                var user = new ProfilesRepository(Constants.Constants.ConnectionString);
+                foreach (var chat in _chats)
                 {
-                    var chatRepo = new ChatsRepository(ConnectionString, user);
-                    foreach (var message in messages)
-                        new MessagesRepository(ConnectionString).DeleteMessage(message);
+                    var chatRepo = new ChatsRepository(Constants.Constants.ConnectionString, user);
+                    foreach (var message in _messages)
+                        new MessagesRepository(Constants.Constants.ConnectionString).DeleteMessage(message);
                     chatRepo.DeleteChat(chat);
                 }
                 user.DeleteProfile(login);

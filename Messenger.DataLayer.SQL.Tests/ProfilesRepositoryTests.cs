@@ -1,44 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Messenger.Model;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Messenger.DataLayer.SQL.Tests
 {
     [TestClass]
     public class ProfilesRepositoryTests
     {
-        private const string ConnectionString = @"Data Source = ACER;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";
-
-        private readonly List<Guid> tempUsers = new List<Guid>();
-        private readonly List<Guid> chats = new List<Guid>();
+        private readonly List<Guid> _chats = new List<Guid>();
+        private readonly List<Guid> _tempUsers = new List<Guid>();
 
         [TestMethod]
         public void ShouldCreateUser()
         {
-            //arrange
             var profile = new Profile
             {
                 Id = Guid.NewGuid(),
-                Login = "Admin",
+                Login = "odmin",
                 Avatar = Guid.NewGuid(),
                 Password = "12345",
-                Name = "admin",
-                Surname = "admin"
+                Name = "odmin",
+                Surname = "odmin"
             };
-
-            //act
-            var repository = new ProfilesRepository(ConnectionString);
+            var repository = new ProfilesRepository(Constants.Constants.ConnectionString);
             var result = repository.CreateProfile(profile);
 
-            tempUsers.Add(result.Id);
-
-            //asserts
+            _tempUsers.Add(result.Id);
             Assert.AreEqual(profile.Login, result.Login);
             Assert.AreEqual(profile.Avatar, result.Avatar);
             Assert.AreEqual(profile.Password, result.Password);
@@ -49,42 +39,34 @@ namespace Messenger.DataLayer.SQL.Tests
         [TestMethod]
         public void ShouldStartChatWithUser()
         {
-            //arrange
             var profile = new Profile
             {
                 Id = Guid.NewGuid(),
-                Login = "Admin",
+                Login = "odmin",
                 Avatar = Guid.NewGuid(),
                 Password = "12345",
-                Name = "admin",
-                Surname = "admin"
+                Name = "odmin",
+                Surname = "odmin"
             };
-
             const string chatName = "UserChat";
-
-            //act
-            var profileRepository = new ProfilesRepository(ConnectionString);
+            var profileRepository = new ProfilesRepository(Constants.Constants.ConnectionString);
             var result = profileRepository.CreateProfile(profile);
-
-            tempUsers.Add(result.Id);
-
-            var chatRepository = new ChatsRepository(ConnectionString, profileRepository);
-
+            _tempUsers.Add(result.Id);
+            var chatRepository = new ChatsRepository(Constants.Constants.ConnectionString, profileRepository);
             var chatBefore = new Chat
             {
                 ChatId = Guid.NewGuid(),
                 ChatName = chatName,
-                ChatMembers = new List<Profile>((new Profile[] { profile })),
+                ChatMembers = new List<Guid>(new[] {profile.Id})
             };
-
             var chat = chatRepository.CreateChat(chatBefore);
-            chats.Add(chat.ChatId);
+            _chats.Add(chat.ChatId);
             var userChats = profileRepository.GetProfileChats(profile.Id);
-            //asserts
             Assert.AreEqual(chatName, chat.ChatName);
-            Assert.AreEqual(profile.Login, chat.ChatMembers.Single().Login);
-            Assert.AreEqual(chat.ChatId, userChats.Single().ChatId);
-            Assert.AreEqual(chat.ChatName, userChats.Single().ChatName);
+            Assert.AreEqual(profile.Id, chat.ChatMembers.Single());
+            var chats = userChats as IList<Chat> ?? userChats.ToList();
+            Assert.AreEqual(chat.ChatId, chats.Single().ChatId);
+            Assert.AreEqual(chat.ChatName, chats.Single().ChatName);
         }
 
         [TestMethod]
@@ -93,62 +75,59 @@ namespace Messenger.DataLayer.SQL.Tests
             var profile = new Profile
             {
                 Id = Guid.NewGuid(),
-                Login = "Admin",
+                Login = "odmin",
                 Avatar = Guid.NewGuid(),
                 Password = "12345",
-                Name = "admin",
-                Surname = "admin"
+                Name = "odmin",
+                Surname = "odmin"
             };
 
-            var repository = new ProfilesRepository(ConnectionString);
+            var repository = new ProfilesRepository(Constants.Constants.ConnectionString);
             repository.CreateProfile(profile);
-            tempUsers.Add(profile.Id);
+            _tempUsers.Add(profile.Id);
 
             var result = repository.GetProfile(profile.Id);
 
             Assert.AreEqual(profile.Login, result.Login);
-            Assert.AreEqual(profile.Password, result.Password);
             Assert.AreEqual(profile.Name, result.Name);
             Assert.AreEqual(profile.Surname, result.Surname);
         }
 
         [TestMethod]
+        [SuppressMessage("ReSharper", "EmptyGeneralCatchClause")]
         public void ShouldDeleteProfile()
         {
             var profile = new Profile
             {
                 Id = Guid.NewGuid(),
-                Login = "Admin",
+                Login = "odmin",
                 Avatar = Guid.NewGuid(),
                 Password = "12345",
-                Name = "admin",
-                Surname = "admin"
+                Name = "odmin",
+                Surname = "odmin"
             };
 
-            var repository = new ProfilesRepository(ConnectionString);
+            var repository = new ProfilesRepository(Constants.Constants.ConnectionString);
             repository.CreateProfile(profile);
-
-            Profile result = null;
 
             repository.DeleteProfile(profile.Id);
             try
             {
-                result = repository.GetProfile(profile.Id);
+                repository.GetProfile(profile.Id);
             }
-            catch(System.ArgumentException)
+            catch (Exception)
             {
-                return;
             }
         }
 
         [TestCleanup]
         public void Clean()
         {
-            foreach (var login in tempUsers)
+            foreach (var login in _tempUsers)
             {
-                var user = new ProfilesRepository(ConnectionString);
-                foreach (var chat in chats)
-                    new ChatsRepository(ConnectionString, user).DeleteChat(chat);
+                var user = new ProfilesRepository(Constants.Constants.ConnectionString);
+                foreach (var chat in _chats)
+                    new ChatsRepository(Constants.Constants.ConnectionString, user).DeleteChat(chat);
                 user.DeleteProfile(login);
             }
         }
