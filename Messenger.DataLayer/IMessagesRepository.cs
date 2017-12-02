@@ -11,8 +11,10 @@ namespace Messenger.DataLayer
         void DeleteMessage(Guid id);
         IEnumerable<Message> GetMessages(Guid chatId);
         int CountMessages(Guid chatId);
+        int CountReadMessages(Guid chatId, Guid personId);
         IEnumerable<Message> FindMessages(String[] names, Guid profileId);
         void CheckUndestroyedMessages(Guid id);
         void UpdateMessageRead(Guid id);
+        void Destroy(Message message);
     }
 }

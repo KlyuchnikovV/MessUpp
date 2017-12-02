@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Messenger App. Version 0.5.0</title>
+        <title>Messenger App. Version</title>
         <meta charset="utf-8">
         <script type="text/javascript" src="js/rest.js"></script>
         <script type="text/javascript" src="js/loginActions.js"></script>
@@ -29,20 +29,21 @@
                 <div id="divLogin" class="inputBox">
                     <label class="label" style="color:#ffffff"><br/>Логин:</label>
                     <div>
-                        <input id="txtLog" class="textbox"  type="textbox" value="Barney" style="width:174px"/>
+                        <input id="txtLog" class="textbox"  type="textbox" value="Barney" style="width:174px" onkeyup="return LoginValidate(this);"/>
                     </div>
                 </div>
                 <div id="divPassword" class="inputBox">
                     <label class="label" style="color:#ffffff"><br/>Пароль:</label>
                     <div>
-                        <input id="txtPass" class="textbox"  type="password" value="12345" style="width:174px"/>
+                        <input id="txtPass" class="textbox"  type="password" value="12345" style="width:174px" onkeyup="return PassValidate(this);"/>
                     </div>
                     <br/>
                 </div>
                 <div id="divButtons">
-                    <input id="loginButton" class="button" value="Войти" type="button" onclick="Login();"/>
+                    <input id="loginButton" class="button" value="Войти" type="button" onclick="ValidateLoginPass(); Login();"/>
                     <input id="registerButton" class="button" value="Регистрация" type="button"  onclick="document.getElementById('registerDiv').click();"/>
                 </div>
+                <input type="hidden" id="loginPassed" value="false"/>
             </div>
             <div class="registerPanel" align="center" id="registerPan">
                 <form id="formCreate">
@@ -50,7 +51,6 @@
                         <label class="label"><h1>Регистрация</h1></label>
                     </div>
                     <div id="avatarDiv">
-                        <!-- Create default picture for user -->
                         <img id="avatar" style="max-height:200px; max-width:150px" src="./img/personWithoutImage.png"/>
                     </div>
                     <div id="divName" class="inputBox">

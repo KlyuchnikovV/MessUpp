@@ -14,16 +14,10 @@ namespace Messenger.Api.Controllers
     public class ProfileController : ApiController
     {
         private readonly IProfilesRepository profilesRepository;
-        /*private const string ConnectionString = @"Data Source = ACER;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";*/
-        private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";
 
         public ProfileController()
         {
-            profilesRepository = new ProfilesRepository(ConnectionString);
+            profilesRepository = new ProfilesRepository(Constants.Constants.ConnectionString);
         }
 
         [HttpPost]
@@ -68,7 +62,33 @@ namespace Messenger.Api.Controllers
                 };
                 throw new HttpResponseException(response);
             } 
-        }        
+        }
+
+        [HttpPost]
+        [Route("api/profile/update")]
+        public Profile UpdateProfile([FromBody] Profile profile)
+        {
+            try
+            {
+                return profilesRepository.ChangeProfileData(profile);
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+            catch (Exception exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.Conflict)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+        }
 
         [HttpDelete]
         [Route("api/profile/{id}")] 
@@ -174,6 +194,24 @@ namespace Messenger.Api.Controllers
                 };
                 throw new HttpResponseException(response);
             }
+        }
+
+        [HttpPost]
+        [Route("api/profile/find/login")]
+        public Profile GetProfile([FromBody]DataToFind data)
+        {
+            //try
+            //{
+                return profilesRepository.GetByLogin(data.tokens[0]);
+            //}
+            //catch (SqlException exception)
+            //{
+            //    var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+            //    {
+            //        Content = new StringContent(exception.Message)
+            //    };
+                //throw new HttpResponseException(response);
+            //}
         }
 
     }

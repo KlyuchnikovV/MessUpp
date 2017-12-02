@@ -15,17 +15,11 @@ namespace Messenger.Api.Controllers
     {
         private readonly IProfilesRepository profilesRepository;
         private readonly IMessagesRepository messagesRepository;
-        /*private const string ConnectionString = @"Data Source = ACER;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";*/
-        private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";
 
         public MessageController()
         {
-            profilesRepository = new ProfilesRepository(ConnectionString);
-            messagesRepository = new MessagesRepository(ConnectionString);
+            profilesRepository = new ProfilesRepository(Constants.Constants.ConnectionString);
+            messagesRepository = new MessagesRepository(Constants.Constants.ConnectionString);
         }
 
         [HttpPost]
@@ -109,8 +103,38 @@ namespace Messenger.Api.Controllers
                     {
                         messagesRepository.UpdateMessageRead(message.MessageId);
                     }
+                    if(profileId != message.ProfileId)
+                        messagesRepository.Destroy(message);
                 }
                 return list;
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+        }
+
+        [HttpGet]
+        [Route("api/message/chat/{id}/profile/{profileId}/noread")]
+        public Message GetMessagesWithoutReadFlag(Guid id, Guid profileId)
+        {
+            try
+            {
+                messagesRepository.CheckUndestroyedMessages(id);
+                List<Message> list = messagesRepository.GetMessages(id).ToList();
+                list.Sort(delegate (Message one, Message two)
+                {
+                    return one.Date.CompareTo(two.Date);
+                }
+                );
+                if ((DateTime.Now.TimeOfDay - list.Last().Date.TimeOfDay).TotalSeconds < 30)
+                    return list.Last();
+                else
+                    return null;
             }
             catch (SqlException exception)
             {
@@ -129,9 +153,27 @@ namespace Messenger.Api.Controllers
             try
             {
                 Profile profile = profilesRepository.GetProfile(profileId);
-                if(!profile.IsOnline || ((DateTime.Now.TimeOfDay - profile.LastQueryDate.TimeOfDay).Minutes >= 1))
+                if (!profile.IsOnline || ((DateTime.Now.TimeOfDay - profile.LastQueryDate.TimeOfDay).Minutes >= 1))
                     profilesRepository.LoginProfile(profileId);
                 return messagesRepository.CountMessages(chatId);
+            }
+            catch (SqlException exception)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent(exception.Message)
+                };
+                throw new HttpResponseException(response);
+            }
+        }
+
+        [HttpGet]
+        [Route("api/message/chat/{chatId}/profile/{profileId}/read")]
+        public int CountReadMessages(Guid chatId, Guid profileId)
+        {
+            try
+            {
+                return messagesRepository.CountReadMessages(chatId, profileId);
             }
             catch (SqlException exception)
             {

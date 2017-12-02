@@ -30,5 +30,7 @@ namespace Messenger.DataLayer
         void LoginProfile(Guid id);
 
         void LogoutProfile(Guid id);
+
+        Profile GetByLogin(string login);
     }
 }

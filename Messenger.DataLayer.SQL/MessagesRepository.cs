@@ -11,8 +11,7 @@ namespace Messenger.DataLayer.SQL
     {
         private readonly string connectionString;
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        Thread thread;
-        Guid idOfDeleting;
+        public Guid idOfDeleting;
 
         public MessagesRepository(string _connectionString)
         {
@@ -40,7 +39,7 @@ namespace Messenger.DataLayer.SQL
                     message.Date = System.DateTime.Now;
                     logger.Info("Отправка сообщения с параметрами: ИД сообщения = {0}, ИД профиля = {1}, ИД чата = {2}, Текст = {3}, Дата отправки = {4}, Время жизни = {5}, ИД приложения = {6}",
                         message.MessageId, message.ProfileId, message.ChatId, message.MessageText, message.Date, message.TimeToDestroy, message.Attachment);
-                    command.CommandText = "INSERT INTO Messages (MessageId, ProfileId, ChatId, MessageText, SendDate, LifeTime, AttachId) VALUES (@MessageId, @ProfileId, @ChatId, @MessageText, @SendDate, @LifeTime, @AttachId)";
+                    command.CommandText = "INSERT INTO Messages (MessageId, ProfileId, ChatId, MessageText, SendDate, LifeTime, AttachId, IsRead) VALUES (@MessageId, @ProfileId, @ChatId, @MessageText, @SendDate, @LifeTime, @AttachId, @IsRead)";
                     command.Parameters.AddWithValue("@MessageId", message.MessageId);
                     command.Parameters.AddWithValue("@ProfileId", message.ProfileId);
                     command.Parameters.AddWithValue("@ChatId", message.ChatId);
@@ -48,6 +47,7 @@ namespace Messenger.DataLayer.SQL
                     command.Parameters.AddWithValue("@SendDate", message.Date);
                     command.Parameters.AddWithValue("@LifeTime", message.TimeToDestroy);
                     command.Parameters.AddWithValue("@AttachId", message.Attachment);
+                    command.Parameters.AddWithValue("@IsRead", "0");
                     try
                     {
                         command.ExecuteNonQuery();
@@ -56,13 +56,6 @@ namespace Messenger.DataLayer.SQL
                     {
                         logger.Error(exception.Message);
                         throw exception;
-                    }
-
-                    if(message.TimeToDestroy > 0)
-                    {
-                        thread = new Thread(SelfDestroy);
-                        idOfDeleting = message.MessageId;
-                        thread.Start();
                     }
 
                     return message;
@@ -214,6 +207,37 @@ namespace Messenger.DataLayer.SQL
             return 0;
         }
 
+        // Подсчитывает прочитанные сообщения чата(например для мониторинга новых сообщений). //
+        public int CountReadMessages(Guid chatId, Guid personId)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                logger.Debug("Подсчет прочитанных сообщений...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error($"Не могу подключиться к БД, {exception.Message}");
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info($"Подсчет прочитанных сообщений {chatId}");
+                    command.CommandText = "SELECT COUNT(*) as count FROM Messages WHERE ChatId = @ChatId and ProfileId = @ProfileId and IsRead = '1'";
+                    command.Parameters.AddWithValue("@ChatId", chatId);
+                    command.Parameters.AddWithValue("@ProfileId", personId);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                            return (reader.GetInt32(reader.GetOrdinal("count")));
+                    }
+                }
+            }
+            return 0;
+        }
+
         // Ищет все сообщения . //
         public IEnumerable<Message> FindMessages(String[] names, Guid profileId)
         {
@@ -328,7 +352,7 @@ namespace Messenger.DataLayer.SQL
                 }
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "SELECT * FROM Messages WHERE LifeTime <> 0 And ChatId = @Id";
+                    command.CommandText = "SELECT * FROM Messages WHERE LifeTime <> 0 And ChatId = @Id and IsRead = '1'";
                     command.Parameters.AddWithValue("@Id", id);
                     using (var reader = command.ExecuteReader())
                     {
@@ -400,6 +424,17 @@ namespace Messenger.DataLayer.SQL
 
                     command.ExecuteNonQuery();
                 }
+            }
+        }
+
+        public void Destroy(Message message)
+        {
+            if (message.TimeToDestroy > 0)
+            {
+                Thread thread;
+                thread = new Thread(SelfDestroy);
+                idOfDeleting = message.MessageId;
+                thread.Start();
             }
         }
     }

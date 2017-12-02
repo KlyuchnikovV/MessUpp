@@ -50,6 +50,7 @@ function ResetPanels(element)
 
 // Инициализация приложения. //
 $(document).ready(function(){
+
     // Функция переключения состояния боковой панели чатов. //
     $("div.divButtonChats").click(
         function()
@@ -243,7 +244,28 @@ $(document).ready(function(){
     setInterval(
         function()
         {
-            UpdateMessages();
+            if(CountReadMessages(document.getElementById("chatId").value))
+            {
+                GetMessages(divs[i].value);
+            } 
+            var divs = document.getElementsByClassName("chatIdDiv");
+            for(var i = 0; i < divs.length; i++)
+            {
+                if(UpdateMessages(divs[i].value))
+                {
+                    if(document.getElementById("chatId").value == divs[i].value)
+                    {
+                        GetMessages(divs[i].value);
+                        continue;
+                    }
+                    else if(document.getElementById("chatId").value  != "")
+                    {
+                        var message = GetLastMessage(divs[i].value);
+                        if(message.ProfileId != document.getElementById("profileId").value && message.IsRead == false)
+                            MessagePopUp(message);
+                    }
+                }
+            }
         }
     , 1000);
 
@@ -253,7 +275,7 @@ $(document).ready(function(){
         if(document.getElementById('chatId').value != "")
         {
           ChatProfiles();
-          GetMessages(document.getElementById('chatId').value);
+          GetChats();
         }
       }, 30000
     );
@@ -268,127 +290,30 @@ $(document).ready(function(){
     {
         divElem.innerHTML = "";
         inpElem.innerHTML = inpElem.innerHTML;
-        if ( file.type.match(/image.*/) )
-        {
-            document.getElementById('messageBox').setAttribute("style",
-            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");
+        document.getElementById('messageBox').setAttribute("style",
+        "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:200px");
 
-            var reader = new FileReader(), img;
-            reader.addEventListener("load",
+        var reader = new FileReader(), img;
+        reader.addEventListener("load",
             function(event)
             {
                 img = document.createElement('img');
-                var close = document.createElement('div');
-                close.setAttribute("src", "./img/close2.png");
-				close.setAttribute("height", "25px");
-				close.setAttribute("width", "25px");
-				close.setAttribute("vspace", "5px");
-				close.setAttribute("hspace", "5px");
-				close.setAttribute("style", "background-color:#ffffff;position:absolute;margin-right:5px;margin-left:75px;height:25px;width:25px;top:0px;z-index:90;");
-				close.setAttribute("onclick", "DeleteAttach()");
-				close.setAttribute("class", "divButton");
-                img.setAttribute("style", "top:5px;height:100px;width:100%;display:inline-block");
+                var close = document.createElement('img');
+                close.setAttribute("src", "./img/close.png");
+                close.setAttribute("height", "25px");
+                close.setAttribute("width", "25px");
+                close.setAttribute("vspace", "5px");
+                close.setAttribute("hspace", "5px");
+                close.setAttribute("style", "background-color:transparent;position:absolute;margin-right:5px;margin-left:-30px;height:25px;width:25px;top:0px;z-index:90;");
+                close.setAttribute("onclick", "DeleteAttach()");
+                close.setAttribute("class", "divButton");
+                img.setAttribute("style", "top:5px;height:100px;width:100%;display:inline-block;");
                 img.setAttribute("id", "previewImage");
                 img.src = event.target.result;
                 divElem.appendChild(img);
                 divElem.appendChild(close);
             });
-            reader.readAsDataURL(file);
-        }
-        else
-        {
-            document.getElementById('messageBox').setAttribute("style",
-            "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:159px; position:absolute; bottom:5px; left: 0px; min-width:765px");
-
-            var img;
-            img = document.createElement('img');
-            img.setAttribute("style", "margin-top:5px;height:100px;width:100%;display:inline-block");
-            img.setAttribute("id", "previewImage");
-            img.src = event.target.result;
-            divElem.appendChild(img);
-            switch(file.type)
-            {
-                case 'text/plain':
-                case 'application/plain':
-                {
-                    img.src = "img/fileIcons/txtFile.png";
-                    break;
-                }
-                case 'application/pdf':
-                {
-                    img.src = "img/fileIcons/pdfFile.png";
-                    break;
-                }
-                case 'application/msword':
-                {
-                    img.src = "img/fileIcons/docFile.png";
-                    break;
-                }
-                case 'audio/mpeg3':
-                case 'audio/x-mpeg3':
-                case 'video/mpeg':
-                case 'video/x-mpeg':
-                case 'audio/mp3':
-                {
-                    img.src = "img/fileIcons/mp3File.png";
-                    break;
-                }
-                case 'application/zip':
-                case 'application/x-compressed':
-                case 'application/x-zip-compressed':
-                {
-                    img.src = "img/fileIcons/zipFile.png";
-                    break;
-                }
-                case 'application/x-compress':
-                {
-                    img.src = "img/fileIcons/7zipFile.png";
-                    break;
-                }
-                case 'application/rtf':
-                case 'application/x-rtf':
-                case 'text/richtext':
-                {
-                    img.src = "img/fileIcons/rtfFile.png";
-                    break;
-                }
-                case 'application/mspowerpoint':
-                case 'application/powerpoint':
-                case 'application/vnd.ms-powerpoint':
-                case 'application/x-mspowerpoint':
-                {
-                    img.src = "img/fileIcons/pptFile.png";
-                    break;
-                }
-                case 'audio/mpg':
-                case 'video/mpg':
-                {
-                    img.src = "img/fileIcons/mpgFile.png";
-                    break;
-                }
-                case 'video/mp4':
-                {
-                    img.src = "img/fileIcons/mp4File.png";
-                    break;
-                }
-                case 'audio/wav':
-                case 'audio/x-wav':
-                {
-                    img.src = "img/fileIcons/wavFile.png";
-                    break;
-                }
-                case 'audio/octet-stream':
-                {
-                    img.src = "img/fileIcons/exeFile.png";
-                    break;
-                }
-                default:
-                {
-                    img.src = "img/fileIcons/file.png";
-                    break;
-                }
-            }
-        }
+        reader.readAsDataURL(file);
     }
 });
 
@@ -409,9 +334,9 @@ function LoadProfileInfo()
 	var profileId = document.getElementById("profileId").value;
     var item = GetProfile(profileId);
     var img = document.getElementById("avatar");
-    document.getElementById("currentName").innerHTML = item.Name;
-    document.getElementById("currentSurname").innerHTML = item.Surname;
-    document.getElementById("currentLogin").innerHTML = item.Login;
+    document.getElementById("txtName").value = item.Name;
+    document.getElementById("txtSurname").value = item.Surname;
+    document.getElementById("txtLogin").value = item.Login;
 	if(item.Avatar != null)
 	{
 		var attachData = GetAttachData(item.Avatar);
@@ -437,5 +362,92 @@ function DeleteAttach()
     document.getElementById('preview').innerHTML = "";
     document.getElementById('file-input').value = "";
     document.getElementById('messageBox').setAttribute("style",
-    "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:765px");
+    "visibility:visible;background-color:#202020; vertical-align:center; width:100%; height:39px; position:absolute; bottom:5px; left: 0px; min-width:200px");
+}
+
+function ChatValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Zа-яА-Я0-9\ ]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("chatPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("chatPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function Response(id)
+{
+    var profile = GetProfile(id);
+    document.getElementById("messageArea").value += "@" + profile.Login + ", ";
+}
+
+// Функция показа всплывающих сообщений. //
+function MessagePopUp(message)
+{
+    var popUp = document.getElementById("messagePopUp");
+    var popUpInf = document.getElementById("messagePopUpInf");
+    var popUpMessage = document.getElementById("messagePopUpMessage");
+    var profile = GetProfile(message.ProfileId);
+    var chat = GetChat(message.ChatId);
+    popUpInf.innerHTML = profile.Name + " " + profile.Surname + " из чата " + chat.ChatName;
+    popUpMessage.innerHTML = message.MessageText;
+
+    popUp.setAttribute("style",
+        "background:#808080;z-index:99;visibility:visible;color:#ffffff; height:60px; " +
+        "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-100px; " +
+        "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center");
+    setTimeout( function()
+    {
+        $("div#messagePopUp").animate({top:'-100px'},500);
+        setTimeout( function()
+        {
+            popUp.setAttribute("style",
+                "background:#808080;z-index:99;visibility:visible;height:60px; " +
+                "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-100px; " +
+                "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center;color:#ffffff");
+        }, 500);
+    }, 5000);
+    $("div#messagePopUp").animate({top:'0px'},500);
+    var img = document.createElement("img");
+    img.setAttribute("src", "./img/close.png");
+    img.setAttribute("height", "25px");
+    img.setAttribute("width", "25px");
+    img.setAttribute("vspace", "5px");
+    img.setAttribute("hspace", "5px");
+    img.setAttribute("style", "position:absolute; right:0px; top:0px");
+    img.setAttribute("onclick", "CloseMessagePopUp()");
+    img.setAttribute("class", "divButton");
+    popUp.appendChild(img);
+    
+}
+
+function CloseMessagePopUp()
+{
+    $("div#messagePopUp").animate({top:'-100px'},500);
+}
+
+function ChangeState()
+{
+    var checkbox = document.getElementById("checkbox");
+    var input = document.getElementById("timer");
+    if(checkbox.checked)
+    {
+        //checkbox.checked= false;
+        input.disabled = false;
+        input.value = 10;
+    }
+    else
+    {
+        //checkbox.checked = true;
+        input.disabled = true;
+        input.value = 0;
+    }
 }

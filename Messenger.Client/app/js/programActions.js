@@ -104,7 +104,129 @@ function EnableDiv(div)
     document.getElementById("divLoader").remove();
 }
 
-function ResizeImage(img, width, height)
+function NameValidate(input)
 {
+    var value = input.value;
+    var rep = /^[a-zA-Zа-яА-Я]+$/;
+    if(!rep.test(value))
+    {
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
 
+    }
+}
+
+function SurnameValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Zа-яА-Я]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function LoginValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Z0-9]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function PassValidate(input)
+{
+    var value = input.value;
+    var rep = /^[a-zA-Z0-9]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("registerPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("registerPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+}
+
+function ValidateAll()
+{
+    NameValidate(document.getElementById("txtName"));
+    if(document.getElementById("registerPassed").value == 'true')
+    {
+        SurnameValidate(document.getElementById("txtSurname"));
+    }
+
+    if(document.getElementById("registerPassed").value == 'true')
+    {
+        LoginValidate(document.getElementById("txtLogin"));
+    }
+
+    if(document.getElementById("registerPassed").value == 'true')
+    {
+        PassValidate(document.getElementById("txtPassword"));
+    }
+}
+
+function ValidateLoginPass()
+{
+    var input = document.getElementById("txtLog");
+    var value = input.value;
+    var rep = /^[a-zA-Z0-9]+$/;
+    if(!rep.test(value))
+    {
+        //input.value = "";
+        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+        document.getElementById("loginPassed").value = false;
+    }
+    else
+    {
+        document.getElementById("loginPassed").value = true;
+        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+
+    }
+    if(document.getElementById("loginPassed").value == 'true')
+    {
+        var pass = document.getElementById("txtPass");
+        var value = pass.value;
+        var rep = /^[a-zA-Z0-9]+$/;
+        if(!rep.test(value))
+        {
+            //input.value = "";
+            pass.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+            document.getElementById("loginPassed").value = false;
+        }
+        else
+        {
+            document.getElementById("loginPassed").value = true;
+            pass.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
+    
+        }
+    }
 }

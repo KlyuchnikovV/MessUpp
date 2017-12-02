@@ -54,15 +54,20 @@ namespace Messenger.DataLayer.SQL
                         newProfile.Id = Guid.NewGuid();
                         logger.Info($"Создание нового ИД для пользователя...");
                     }
+
+                    newProfile.LastQueryDate = DateTime.Now;
+                    newProfile.IsOnline = false;
                     
-                    command.CommandText = 
-                        "INSERT INTO Profiles (Id, Login, Password, Name, Surname, Avatar) values (@Id, @Login, @Password, @Name, @Surname, @Avatar)";
+                    command.CommandText =
+                        "INSERT INTO Profiles (Id, Login, Password, Name, Surname, Avatar, IsOnline, LastQueryDate) values (@Id, @Login, @Password, @Name, @Surname, @Avatar, @IsOnline, @LastQueryDate)";
                     command.Parameters.AddWithValue("@Id", newProfile.Id);
                     command.Parameters.AddWithValue("@Login", newProfile.Login);
                     command.Parameters.AddWithValue("@Password", newProfile.Password);
                     command.Parameters.AddWithValue("@Name", newProfile.Name);
                     command.Parameters.AddWithValue("@Surname", newProfile.Surname);
                     command.Parameters.AddWithValue("@Avatar", newProfile.Avatar);
+                    command.Parameters.AddWithValue("@IsOnline", "0");
+                    command.Parameters.AddWithValue("@LastQueryDate", DateTime.Now);
 
                     logger.Info(
                         "Попытка создания нового профиля с параметрами: ИД = {0}, Логин = {1}, Пароль = {2}, Имя = {3}, Фамилия = {4}, Аватар = {5}.",
@@ -87,9 +92,40 @@ namespace Messenger.DataLayer.SQL
         public Profile ChangeProfileData(Profile newData)
         {
             logger.Debug($"Изменение данных о пользователе с ИД { newData.Id }.");
-            DeleteProfile(newData.Id);
-            logger.Info($"Профиль с логином {newData.Login} обновлен.");
-            return CreateProfile(newData); 
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info("Обновление данных профиля.");
+                    command.CommandText = "Update Profiles SET Login = @Login, Password = @Password, Name = @Name, Surname = @Surname WHERE Id = @ProfileId";
+                    command.Parameters.AddWithValue("@ProfileId", newData.Id);
+                    command.Parameters.AddWithValue("@Login", newData.Login);
+                    command.Parameters.AddWithValue("@Password", newData.Password);
+                    command.Parameters.AddWithValue("@Name", newData.Name);
+                    command.Parameters.AddWithValue("@Surname", newData.Surname);
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        throw exception;
+                    }
+                }
+            }
+            return newData;
+
+
         }
 
         // Возвращает профиль пользователя с данным ИД. // 
@@ -255,7 +291,7 @@ namespace Messenger.DataLayer.SQL
                     {
                     
                         logger.Info($"Поиск пользователя по строке {token}");
-                        command.CommandText = "SELECT * FROM Profiles WHERE Login = @Name OR Name = @Name OR Surname = @Name";
+                        command.CommandText = "SELECT * FROM Profiles WHERE Login Like @Name OR Name Like @Name OR Surname Like @Name";
                         command.Parameters.AddWithValue("@Name", "%" + token + "%");
                         SqlDataReader reader;
                         try
@@ -318,6 +354,60 @@ namespace Messenger.DataLayer.SQL
                                 throw new Exception("Пользователь с данными логином и паролем не найден");
 
                             logined =  new Profile
+                            {
+                                Id = reader.GetGuid(reader.GetOrdinal("Id")),
+                                Login = reader.GetString(reader.GetOrdinal("Login")),
+                                Password = reader.GetString(reader.GetOrdinal("Password")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Surname = reader.GetString(reader.GetOrdinal("Surname")),
+                                Avatar = reader.GetGuid(reader.GetOrdinal("Avatar")),
+                                LastQueryDate = reader.GetDateTime(reader.GetOrdinal("LastQueryDate")),
+                                IsOnline = reader.GetBoolean(reader.GetOrdinal("IsOnline"))
+                            };
+                        }
+                    }
+                    catch (SqlException exception)
+                    {
+                        logger.Error(exception.Message);
+                        throw exception;
+                    }
+                    LoginProfile(logined.Id);
+                    logined.IsOnline = true;
+                    logined.LastQueryDate = DateTime.Now;
+                    return logined;
+                }
+            }
+        }
+
+        public Profile GetByLogin(string login)
+        {
+            using (var connection = new SqlConnection(connectionString))
+            {
+                Profile logined = null;
+                logger.Debug("Получение профиля...");
+                try
+                {
+                    connection.Open();
+                }
+                catch (SqlException exception)
+                {
+                    logger.Error("Не могу подключиться к БД, {0}", exception.Message);
+                    throw exception;
+                }
+                using (var command = connection.CreateCommand())
+                {
+                    logger.Info($"Получение пользователя по логину {login}");
+                    command.CommandText = "SELECT TOP(1) * FROM Profiles WHERE Login = @Login";
+                    command.Parameters.AddWithValue("@Login", login);
+                    try
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (!reader.Read())
+                                return null;
+                            //    throw new Exception("Пользователь с данными логином и паролем не найден");
+
+                            logined = new Profile
                             {
                                 Id = reader.GetGuid(reader.GetOrdinal("Id")),
                                 Login = reader.GetString(reader.GetOrdinal("Login")),

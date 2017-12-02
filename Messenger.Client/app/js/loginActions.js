@@ -74,13 +74,13 @@ function OnLoadLogin()
             fr.onload = function ()
             {
                 document.getElementById("avatar").src = fr.result;
-                var close = document.createElement('div');
-                close.setAttribute("src", "./img/close2.png");
+                var close = document.createElement('img');
+                close.setAttribute("src", "./img/close.png");
                 close.setAttribute("height", "25px");
                 close.setAttribute("width", "25px");
                 close.setAttribute("vspace", "5px");
                 close.setAttribute("hspace", "5px");
-                close.setAttribute("style", "background-color:#ffffff;position:absolute;height:25px;width:25px;left:150px;top:80px;");
+                close.setAttribute("style", "z-index:99;background-color:transparent;position:absolute;height:25px;width:25px;left:160px;top:80px;");
                 close.setAttribute("onclick", "DeleteAvatar()");
                 close.setAttribute("class", "divButton");
                 document.getElementById("avatarDiv").appendChild(close);
@@ -110,98 +110,6 @@ function ResetPanels(element)
         $("div.registerPanel").animate({left:0},500);
         document.getElementById("registerHidden").value = "false";
     }
-}
-
-function NameValidate(input)
-{
-    var value = input.value;
-    var rep = /^[a-zA-Zа-яА-Я]+$/;
-    if(!rep.test(value))
-    {
-        //input.value = "";
-        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        document.getElementById("registerPassed").value = false;
-    }
-    else
-    {
-        document.getElementById("registerPassed").value = true;
-        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-
-    }
-}
-
-function SurnameValidate(input)
-{
-    var value = input.value;
-    var rep = /^[a-zA-Zа-яА-Я]+$/;
-    if(!rep.test(value))
-    {
-        //input.value = "";
-        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        document.getElementById("registerPassed").value = false;
-    }
-    else
-    {
-        document.getElementById("registerPassed").value = true;
-        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-
-    }
-}
-
-function LoginValidate(input)
-{
-    var value = input.value;
-    var rep = /^[a-zA-Z0-9]+$/;
-    if(!rep.test(value))
-    {
-        //input.value = "";
-        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        document.getElementById("registerPassed").value = false;
-    }
-    else
-    {
-        document.getElementById("registerPassed").value = true;
-        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-
-    }
-}
-
-function PassValidate(input)
-{
-    var value = input.value;
-    var rep = /^[a-zA-Z0-9]+$/;
-    if(!rep.test(value))
-    {
-        //input.value = "";
-        input.setAttribute("style", "border:1px solid #CD853F;color:red;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-        document.getElementById("registerPassed").value = false;
-    }
-    else
-    {
-        document.getElementById("registerPassed").value = true;
-        input.setAttribute("style", "border:1px solid #CD853F;color:green;-moz-border-radius: 10px;-webkit-border-radius: 9px;padding-left: 5px;font-weight: bold;");
-
-    }
-}
-
-function ValidateAll()
-{
-    NameValidate(document.getElementById("txtName"));
-    if(document.getElementById("registerPassed").value == 'true')
-    {
-        SurnameValidate(document.getElementById("txtSurname"));
-    }
-
-    if(document.getElementById("registerPassed").value == 'true')
-    {
-        LoginValidate(document.getElementById("txtLogin"));
-    }
-
-    if(document.getElementById("registerPassed").value == 'true')
-    {
-        PassValidate(document.getElementById("txtPassword"));
-    }
-
 }
 
 function DeleteAvatar()

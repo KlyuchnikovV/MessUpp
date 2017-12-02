@@ -15,16 +15,11 @@ namespace Messenger.Api.Controllers
     {
         private readonly IProfilesRepository profilesRepository;
         private readonly IChatsRepository chatsRepository;
-        /*private const string ConnectionString = @"Data Source = ACER;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";*/
-        private const string ConnectionString = @"Data Source = GORDON-PC\SQLEXPRESS;
-                                                  Initial Catalog=MessengerDB; 
-                                                  Integrated Security=TRUE; ";
+
         public ChatController()
         {
-            profilesRepository = new ProfilesRepository(ConnectionString);
-            chatsRepository = new ChatsRepository(ConnectionString, profilesRepository);
+            profilesRepository = new ProfilesRepository(Constants.Constants.ConnectionString);
+            chatsRepository = new ChatsRepository(Constants.Constants.ConnectionString, profilesRepository);
         }
 
         [HttpPost]

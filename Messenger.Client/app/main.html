@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Messenger App. Version 0.5.0</title>
+        <title>Messenger App. Version</title>
         <meta charset="utf-8">
         <script type="text/javascript" src="js/rest.js"></script>
         <script type="text/javascript" src="js/mainActions.js"></script>
@@ -49,7 +49,8 @@
                 <div id="divChatName" class="inputBox">
                     <label class="label" style="color:#ffffff">Название чата:<br/><br/></label>
                     <div>
-                        <input class="createChatArea" id="txtChatName" class="textbox"  type="textbox" value="Testing chat"/>
+                        <input class="createChatArea" id="txtChatName" class="textbox" onkeyup="return ChatValidate(this);" type="textbox" value="Testing chat"/>
+                        <input type="hidden" id="chatPassed" value="true">
                     </div>
                 </div>
                 <div id="divButtons">
@@ -70,31 +71,44 @@
                 <div style="color: rgb(64, 64, 179);">
                     <label class="label"><br/><h1>Настройки:</h1><br/></label>
                     <div id="avatarDiv">
-                        <!-- Create default picture for user -->
                         <img id="avatar" style="max-height:200px; max-width:150px" src="./img/personWithoutImage.png"/>
                     </div>
                     <div id="divName" class="inputBox">
                         <label style="color:#ffffff"><br/>Ваше имя:</label>
                         <div>
-                            <label style="color:#5a68e6" id="currentName"></label>
+                            <!--<label style="color:#5a68e6" id="currentName"></label>-->
+                            <input type="text" class="textbox" id="txtName" value="" onkeyup="return NameValidate(this);"/>
                         </div>
                     </div>
                     <div id="divSurname" class="inputBox">
                         <label style="color:#ffffff"><br/>Ваша фамилия:</label>
                         <div>
-                            <label style="color:#5a68e6" id="currentSurname"></label>
+                            <!--<label style="color:#5a68e6" id="currentSurname"></label>-->
+                            <input type="text" class="textbox" id="txtSurname" value="" onkeyup="return SurnameValidate(this);"/>
                         </div>
                     </div>
                     <div id="divLogin" class="inputBox">
                         <label style="color:#ffffff"><br/>Ваш логин:</label>
                         <div>
-                            <label style="color:#5a68e6" id="currentLogin"></label><br/><br/>
+                            <!--<label style="color:#5a68e6" id="currentLogin"></label>-->
+                            <input type="text" class="textbox" id="txtLogin" value="" onkeyup="return LoginValidate(this);"/>
                         </div>
                     </div>
+                    <div id="divLogin" class="inputBox">
+                        <label style="color:#ffffff"><br/>Ваш пароль:</label>
+                        <div>
+                            <!--<label style="color:#5a68e6" id="currentLogin"></label>-->
+                            <input type="text" class="textbox" id="txtPass" value="" onkeyup="return PassValidate(this);"/><br/><br/>
+                        </div>
+                    </div>
+                    <input type="button" value="Обновить профиль" class="chatNodes" onclick="ValidateAll(); UpdateProfile();"><br/><br/>
                     <div align="center"onclick="DeleteProfile()"class="chatNodes" style="background-color:red;width:180px;height:50px;">
                         <label><br/>Удалить профиль:</label>
                     </div>
                 </div>
+                <input type="hidden" id="loginHidden" value="false"/>
+                <input type="hidden" id="registerHidden" value="false"/>
+                <input type="hidden" id="registerPassed" value="false"/>
             </div>
             <div class="peoplePanel" align="center">
                 <div style="color: rgb(64, 64, 179);">
@@ -119,9 +133,13 @@
             <input type="hidden" id="peopleHidden" value="false"/>
             <input type="hidden" id="settingsHidden" value="false"/>
         </div>
-        <!-- Панель всплывающих сообщений -->
+        <!-- Панели всплывающих сообщений -->
         <div class="popUp" id="popUp" style="z-index:99;visibility:hidden; height:40px; width:50vw; position:absolute; left:25vw; top:20px">
             <label id="popUpMessage"></label>
+        </div>
+        <div class="popUp" id="messagePopUp" style="z-index:98;visibility:hidden; height:60px; width:50vw; position:absolute; left:25vw; top:20px">
+            <label id="messagePopUpInf" style="overflow:hidden"></label><br/>
+            <label id="messagePopUpMessage" style="overflow:hidden"></label>
         </div>
         <!-- Панель чата -->
         <div class="dialogPanel" id="dialogPanel" style="padding-right:35px">
@@ -133,30 +151,34 @@
             <div id="dialog" class="dialog">
             </div>
             <div class="messageBox"
-                    style="background-color:#202020;visibility:hidden;width:100%;height:49px;position:absolute;bottom:13px;left:0px;min-width:765px"
+                    style="background-color:#202020;visibility:hidden;width:100%;height:100px;position:absolute;bottom:13px;left:0px;min-width:200px"
                     id="messageBox">
-                <div id="preview"style="position:absolute;left:100px;height:110px;width:100px;resize:none;top:5px; bottom:5px;display:inline-block">
+                <div id="preview"style="position:absolute;left:205px;height:110px;width:100px;resize:none;top:5px; bottom:5px;display:inline-block">
                 </div>
                 <div class="divButton" id="attachButton"
                         style="background-color:#202020;width:35px;display:inline-block;position:absolute;bottom:5px;">
                     <label for="file-input">
                         <img class="icon" src="./img/attach.png" height="25px" width="25px" vspace="5px" hspace="4px" title="Прикрепить файл"/>
                     </label>
-                    <input id="file-input" type="file" style="width:25px; height:25px"/>
+                    <input id="file-input" type="file" style="width:25px; height:25px" accept="image/jpeg,image/png"/>
                 </div>
                 <div>
-                    <label style="color:#ffffff;position:absolute;left:5px;bottom:75px;width:100px;resize:none;display:inline-block">
+                    <label style="color:#ffffff;position:absolute;left:5px;bottom:75px;width:175px;resize:none;display:inline-block">Включить самоудаление: </label>
+                    <input type="checkbox" id="checkbox" onclick="ChangeState();" 
+                            style="position:absolute;left:175px;bottom:75px;width:30px;resize:none;display:inline-block"/>
+                    <label style="color:#ffffff;position:absolute;left:5px;bottom:50px;width:100px;resize:none;display:inline-block">
                         До удаления:<br/>
                     </label>
-                    <input type="text" id="timer" value="0" class="timer"
-                            style="position:absolute;left:5px;bottom:50px;width:30px;resize:none;display:inline-block"
-                            onkeyup="return TimerValidator(this);"/>
-                    <label style="color:#ffffff;position:absolute;left:50px;bottom:50px;width:30px;resize:none;display:inline-block">
+                    <input type="text" id="timer" value="0" class="timer" id="timer"
+                            style="position:absolute;left:105px;bottom:50px;width:30px;resize:none;display:inline-block"
+                            onkeyup="return TimerValidator(this);" disabled="disabled"/>
+                    <label style="color:#ffffff;position:absolute;left:150px;bottom:50px;width:30px;resize:none;display:inline-block;">
                         сек.
                     </label>
+                    
                 </div>
                 <textarea class="messageArea"
-                        style="position:absolute;left:35px;resize:none;bottom:0;overflow:hidden;overflow-y:scroll;min-width:550px;height:39px;width:calc(100% - 120px)" id="messageArea"></textarea>
+                        style="position:absolute;left:35px;resize:none;bottom:0;overflow:hidden;overflow-y:scroll;min-width:120px;height:39px;width:calc(100% - 120px)" id="messageArea"></textarea>
                 <div class="divButton"id="sendButton"style="background-color:#202020;width:35px;display:inline-block;position:absolute;left:calc(100% - 70px);bottom:5px;" onclick="SendMessage();">
                     <img class="icon" src="./img/send.png" height="25px" width="25px" vspace="5px" hspace="5px" title="Отправить"/>
                 </div>
@@ -165,6 +187,7 @@
         <input type="hidden" id="profileId" value=""/>
         <input type="hidden" id="chatId" value=""/>
         <input type="hidden" id="count" value="0"/>
+        <input type="hidden" id="read" value="0"/>
         <input type="hidden" id="isRead" value="false"/>
     </body>
 </html>

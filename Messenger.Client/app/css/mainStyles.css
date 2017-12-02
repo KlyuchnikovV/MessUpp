@@ -1,12 +1,10 @@
 .body
 {
     margin:0px;
-    overflow: hidden;/**/
+    overflow: hidden;
     background-color: #202020;
-    /*background-color: #018813; */
-    min-width:765px;
+    min-width:300px;
 }
-
 .cmdPanel
 {
     border:0px solid #CD853F;
@@ -61,31 +59,26 @@
     top:0px;
     border-top: 0px;
     bottom:0;
-    min-width:765px;
+    min-width:200px;
 }
-
-/*общий блок*/
 .slidePanelWrap
 {
     width:200px;
-    position:relative; /*обязательное свойство*/
-    overflow:hidden; /*обязательное свойство*/
+    position:relative;
+    overflow:hidden;
 }
-
-/*элементы левой панели*/
 .chatsPanel,
 .loginPanel
 {
-    margin-left:-235px; /*обязательное свойство*/
+    margin-left:-235px;  
     padding:0px;
     width:200px;
-    position:relative; /*обязательное свойство*/
-    top:0; /*обязательное свойство*/
-    left:0; /*обязательное свойство*/
+    position:relative;  
+    top:0;  
+    left:0;
     background:#303030;
     height: 100vh;
 }
-
 .createPanel,
 .findPanel,
 .settingsPanel,
@@ -93,22 +86,21 @@
 .peoplePanel,
 .registerPanel
 {
-    margin-left:-200px; /*обязательное свойство*/
+    margin-left:-200px;  
     padding:0px;
     width:200px;
-    position: absolute; /*обязательное свойство*/
-    top:0; /*обязательное свойство*/
-    left:0; /*обязательное свойство*/
+    position: absolute;  
+    top:0;  
+    left:0;  
     background:#303030;
     height: 100vh;
 }
-
 .popUp
 {
     padding:0px;
-    position:absolute; /*обязательное свойство*/
-    top:-50px; /*обязательное свойство*/
-    left:240vw; /*обязательное свойство*/
+    position:absolute;  
+    top:-50px;  
+    left:240vw;  
 }
 
 .messageBox,
@@ -137,7 +129,7 @@
     margin-bottom:25px;
     padding:0px;
     background:#202020;
-    height:calc(100vh - 85px);
+    height:calc(100vh - 150px);
     width:100%;
     position: absolute;
     top:35px;
@@ -220,19 +212,16 @@
     padding-left: 5px;
 }
 
-.easy-autocomplete
-{
-    flex :1;
-}
 .loader {
-    border: 16px solid #f3f3f3;
+    border: 16px solid #3763db;
     border-radius: 50%;
-    border-top: 16px solid #CD853F;
+    border-top: 16px solid rgb(39, 66, 153);
     width: 120px;
     height: 120px;
     -webkit-animation: spin 2s linear infinite;
     animation: spin 2s linear infinite;
     visibility: hidden;
+    opacity: 1;
   }
   
   @-webkit-keyframes spin {
@@ -249,4 +238,13 @@
   {
     max-height: 200px;
     max-width: 300px;
+  }
+
+  .textbox
+  {
+      border: 1px solid #CD853F;
+      -moz-border-radius: 10px;
+      -webkit-border-radius: 9px;
+      padding-left: 5px;
+      font-weight: bold;
   }
