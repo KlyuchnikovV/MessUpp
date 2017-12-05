@@ -21,7 +21,7 @@ function PopUp(message, type, isAutoClose)
                     {
                         popUp.setAttribute("style",
                             "background:#808080;z-index:99;visibility:visible;height:40px; " +
-                            "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-60px; " +
+                            "width:50vw; position:absolute; left:25vw;padding-top:20px; top:-61px; " +
                             "-moz-border-radius: 10px; -webkit-border-radius: 9px; text-align:center;color:#0f7702");
                     }, 500);
                 }, 5000);

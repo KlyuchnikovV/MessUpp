@@ -54,11 +54,11 @@ namespace Messenger.DataLayer.SQL
                             Logger.Error("Профиль с таким логином уже существует.");
                             throw new Exception();
                         }
-                        if (newProfile.Id.Equals(Guid.Empty))
-                        {
-                            newProfile.Id = Guid.NewGuid();
-                            Logger.Info($"Создание нового ИД для пользователя...");
-                        }
+                    }
+                    if (newProfile.Id.Equals(Guid.Empty))
+                    {
+                        newProfile.Id = Guid.NewGuid();
+                        Logger.Info("Создание нового ИД для пользователя...");
                     }
 
                     newProfile.LastQueryDate = DateTime.Now;
@@ -229,7 +229,7 @@ namespace Messenger.DataLayer.SQL
                         throw;
                     }
                 }
-                Logger.Info($"Профиль удален.");
+                Logger.Info("Профиль удален.");
             }
         }
 
@@ -252,7 +252,7 @@ namespace Messenger.DataLayer.SQL
                 {
                     command.CommandText =
                         "SELECT chat.* FROM Chats chat JOIN ChatMembers member ON chat.ChatId = member.ChatId " +
-                        "WHERE member.ProfileId = @Id";
+                            "WHERE member.ProfileId = @Id";
                     command.Parameters.AddWithValue("@Id", id);
                     Logger.Info($"Получение чатов пользователя с ИД {id}...");
                     using (var reader = command.ExecuteReader())
@@ -270,7 +270,7 @@ namespace Messenger.DataLayer.SQL
                     }
                 }
             }
-            Logger.Info($"Чаты переданы.");
+            Logger.Info("Чаты переданы.");
         }
 
         /// <inheritdoc />

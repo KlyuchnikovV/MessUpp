@@ -434,7 +434,7 @@ function CreateChat()
 	var chatName = document.getElementById("txtChatName").value;
 	var request = new XMLHttpRequest();
 	request.open('POST', chatUrl, true);
-	var chat = '{ "ChatName" : "' + chatName + '", "ChatMembers" : [ { "Id" : "' + id + '" } ] }';
+	var chat = '{ "ChatName" : "' + chatName + '", "ChatMembers" : [  "' + id + '" ] }';
 	request.setRequestHeader("Content-type", "application/json");
 	try
 	{
